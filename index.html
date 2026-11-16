@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reindev WEB - Design & Developer</title>
+<meta name="description" content="Professional WEB Design & Developer, Landing Page, Katalog Dinamis & Company Profile.">
+<meta name="theme-color" content="#050a18">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>
+  // Anti-flicker: terapkan tema tersimpan sebelum halaman dirender
+  (function () {
+    var d = document.documentElement;
+    d.classList.add('js');
+    try { var t = localStorage.getItem('pf_theme'); if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t); } catch (e) {}
+    setTimeout(function () { d.classList.add('ready'); }, 2500); // fail-safe
+  })();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* ============ BASE (semua warna/ukuran berasal dari CSS variable yang diisi dari portfolioConfig) ============ */
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  html.js:not(.ready) body { visibility: hidden; }
+  [hidden] { display: none !important; }
+  body {
+    font-family: var(--font, 'Plus Jakarta Sans'), system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: var(--fs-body, 1rem);
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  body.modal-open { overflow: hidden; }
+  section[id] { scroll-margin-top: 4.25rem; }
+  ::selection { background: var(--accent); color: var(--btn-text); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+  .container-x { width: 100%; max-width: var(--maxw, 1200px); margin: 0 auto; padding: 0 1.25rem; }
+  @media (min-width: 768px) { .container-x { padding: 0 2rem; } }
+  .section-pad { padding: var(--sec-pad-m, 3.25rem) 0; }
+  @media (min-width: 768px) { .section-pad { padding: var(--sec-pad-d, 5.5rem) 0; } }
+  main, footer { position: relative; z-index: 1; }
+
+  .text-muted { color: var(--text-muted); }
+  .text-accent { color: var(--accent); }
+  .grad-text {
+    background: linear-gradient(120deg, var(--grad-from), var(--grad-via), var(--grad-to));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .clamp-lines { display: -webkit-box; -webkit-line-clamp: var(--lines, 3); -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Typografi (ukuran dari config: typography.sizes) */
+  .hero-title { font-size: var(--fs-hero); line-height: 1.1; font-weight: 800; letter-spacing: -0.03em; overflow-wrap: break-word; }
+  .sec-title { font-size: var(--fs-h2); line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
+  .card-title { font-size: var(--fs-h3); font-weight: 700; line-height: 1.3; overflow-wrap: break-word; min-width: 0; }
+  .t-lead { font-size: var(--fs-lead); }
+  .t-sub { font-size: var(--fs-sub); line-height: 1.55; }
+  .t-small { font-size: var(--fs-small); }
+
+  /* Dekorasi latar */
+  .bg-decor { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .blob { position: absolute; border-radius: 9999px; filter: blur(100px); opacity: .22; }
+  .blob-1 { width: 30rem; height: 30rem; top: -8rem; left: -8rem; background: var(--grad-from); animation: drift 18s ease-in-out infinite alternate; }
+  .blob-2 { width: 26rem; height: 26rem; top: 30%; right: -9rem; background: var(--grad-to); animation: drift 22s ease-in-out infinite alternate-reverse; }
+  .blob-3 { width: 22rem; height: 22rem; bottom: -6rem; left: 25%; background: var(--grad-via); opacity: .14; animation: drift 26s ease-in-out infinite alternate; }
+  [data-theme="light"] .blob { opacity: .16; }
+  [data-theme="light"] .blob-3 { opacity: .1; }
+  .grid-bg {
+    position: absolute; inset: 0; opacity: .5;
+    background-image: linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, #000 25%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, #000 25%, transparent 100%);
+  }
+
+  /* Komponen */
+  .card {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: var(--r-card);
+    box-shadow: var(--shadow); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  }
+  .card-hover { transition: transform .35s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s; }
+  .card-hover:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 24px 60px -28px var(--glow); }
+  @media (hover: none) { .card-hover:hover { transform: none; } }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem; cursor: pointer;
+    font-weight: 700; text-align: center; line-height: 1.25; border: 1px solid transparent;
+    min-height: var(--btn-minh, 2.75rem);
+    padding: var(--btn-py) var(--btn-px); font-size: var(--btn-fs); border-radius: var(--r-btn);
+    transition: transform .25s, filter .25s, border-color .25s, color .25s, box-shadow .25s, background-color .25s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--btn-bg); color: var(--btn-text); box-shadow: 0 12px 32px -14px var(--glow); }
+  .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 18px 40px -14px var(--glow); }
+  .btn-ghost { background: var(--btn2-bg); color: var(--btn2-text); border-color: var(--btn2-border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .btn-danger { background: transparent; color: #f87171; border-color: rgba(248,113,113,.4); }
+  .btn-danger:hover { background: rgba(248,113,113,.12); }
+  .btn-sm { padding: var(--btn-sm-py) var(--btn-sm-px); font-size: var(--btn-sm-fs); min-height: var(--btn-sm-minh, 2.5rem); white-space: nowrap; }
+  .btn-block { width: 100%; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .8rem; border-radius: 9999px;
+    font-size: .76rem; font-weight: 700; letter-spacing: .02em;
+    background: var(--badge-bg); color: var(--badge-text); border: 1px solid var(--badge-border);
+  }
+  .icon-btn {
+    display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 9999px; cursor: pointer; flex: none;
+    background: var(--btn2-bg); color: var(--text); border: 1px solid var(--card-border); transition: .25s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .icon-box {
+    display: grid; place-items: center; width: 2.75rem; height: 2.75rem; flex: none; border-radius: calc(var(--r-card) * .7);
+    background: var(--badge-bg); color: var(--accent); border: 1px solid var(--badge-border); transition: .3s;
+  }
+  .card-hover:hover .icon-box { background: var(--btn-bg); color: var(--btn-text); border-color: transparent; }
+
+  .input, .select, .textarea {
+    width: 100%; background: var(--input-bg); color: var(--text); border: 1px solid var(--card-border);
+    border-radius: calc(var(--r-card) * .6); padding: .7rem 1rem; font: inherit; font-size: .95rem; transition: .25s;
+  }
+  .input::placeholder, .textarea::placeholder { color: var(--text-muted); opacity: .7; }
+  .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--glow); }
+  .select option { background: var(--bg-alt); color: var(--text); }
+  .label { display: block; font-size: .8125rem; font-weight: 700; margin-bottom: .4rem; }
+  .hint { font-size: var(--fs-small, .75rem); color: var(--text-muted); }
+  .field-error { font-size: .78rem; color: #f87171; margin-top: .3rem; }
+
+  /* Navbar */
+  .nav { background: var(--nav-bg); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-bottom: 1px solid transparent; transition: border-color .3s, box-shadow .3s; }
+  .nav.scrolled { border-color: var(--card-border); box-shadow: 0 10px 30px -20px rgba(0,0,0,.5); }
+  .nav-link { padding: .5rem .9rem; border-radius: 9999px; font-weight: 600; font-size: .9rem; color: var(--text-muted); transition: .25s; }
+  .nav-link:hover { color: var(--text); background: var(--badge-bg); }
+  .nav-link.active { color: var(--accent); background: var(--badge-bg); }
+  .logo-mark { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: .7rem; background: var(--btn-bg); color: var(--btn-text); box-shadow: 0 8px 24px -10px var(--glow); flex: none; overflow: hidden; }
+  .logo-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mobile-menu { max-height: 0; overflow: hidden; transition: max-height .4s ease; border-top: 1px solid transparent; }
+  .mobile-menu.open { max-height: 30rem; border-color: var(--card-border); }
+  .mobile-menu .nav-link { display: block; padding: .85rem 1rem; border-radius: .75rem; font-size: 1rem; }
+
+  /* Toggle tema */
+  .theme-switch { position: relative; width: 3.6rem; height: 2.1rem; border-radius: 9999px; cursor: pointer; background: var(--btn2-bg); border: 1px solid var(--card-border); transition: border-color .3s; flex: none; }
+  .theme-switch:hover { border-color: var(--accent); }
+  .theme-knob { position: absolute; top: 50%; left: .2rem; width: 1.55rem; height: 1.55rem; margin-top: -.775rem; border-radius: 9999px; display: grid; place-items: center; background: var(--btn-bg); color: var(--btn-text); transition: transform .45s cubic-bezier(.5,1.6,.4,1); box-shadow: 0 4px 14px -4px var(--glow); }
+  [data-theme="light"] .theme-knob { transform: translateX(1.5rem); }
+  .theme-transition, .theme-transition * { transition: background-color .5s ease, color .5s ease, border-color .5s ease, fill .5s ease, box-shadow .5s ease !important; }
+
+  /* Hero */
+  .pulse-dot { position: relative; width: .55rem; height: .55rem; border-radius: 9999px; background: #22c55e; flex: none; }
+  .pulse-dot::after { content: ''; position: absolute; inset: -4px; border-radius: 9999px; border: 2px solid #22c55e; animation: ping 1.8s cubic-bezier(0,0,.2,1) infinite; }
+  .pulse-dot.off { background: #f59e0b; } .pulse-dot.off::after { border-color: #f59e0b; }
+  .stat-num { font-size: var(--fs-stat); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+  .stat-label { font-size: var(--fs-small); color: var(--text-muted); margin-top: .2rem; font-weight: 500; line-height: 1.3; }
+  .hero-card { padding: 1.25rem; position: relative; overflow: hidden; }
+  @media (min-width: 768px) { .hero-card { padding: 1.5rem; } }
+  .hero-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 100% 0%, var(--glow), transparent 55%); opacity: .5; pointer-events: none; }
+  .avatar { width: 3.75rem; height: 3.75rem; border-radius: var(--r-avatar); overflow: hidden; display: grid; place-items: center; flex: none; background: var(--btn-bg); color: var(--btn-text); font-weight: 800; font-size: 1.3rem; box-shadow: 0 10px 30px -12px var(--glow); }
+  @media (min-width: 768px) { .avatar { width: 4.25rem; height: 4.25rem; font-size: 1.4rem; } }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Blok kode + animasi typing (responsif: font menyesuaikan lebar layar, teks otomatis wrap, tidak terpotong) */
+  .code-block { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: calc(var(--r-card) * .7); background: var(--input-bg); border: 1px solid var(--card-border); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: clamp(.6rem, 2.9vw, .8rem); line-height: 1.75; overflow: hidden; position: relative; }
+  .code-stack { display: grid; min-width: 0; }
+  .code-stack > pre { grid-area: 1 / 1; margin: 0; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; }
+  .code-ghost { visibility: hidden; } /* menjaga tinggi card tetap stabil selama animasi */
+  .code-dots { display: flex; gap: .35rem; margin-bottom: .6rem; }
+  .code-dots i { width: .6rem; height: .6rem; border-radius: 9999px; display: block; }
+  .tok-str { color: var(--accent); } .tok-kw { color: var(--grad-to); font-weight: 600; }
+  .type-cursor { display: inline-block; width: .55ch; height: 1.05em; margin-left: 1px; vertical-align: -.17em; background: var(--accent); border-radius: 1px; animation: blink 1s steps(1) infinite; }
+  @media (max-width: 639px) {
+    .hero-card { padding: 1rem; }
+    .code-block { padding: .8rem .85rem; margin-top: .9rem; }
+  }
+
+  .chip-float { position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: .45rem; padding: .45rem .85rem; border-radius: 9999px; font-size: .76rem; font-weight: 700; background: var(--card); border: 1px solid var(--card-border); box-shadow: var(--shadow); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--text); max-width: 80%; }
+  .chip-float svg { color: var(--accent); flex: none; }
+  .chip-float-1 { top: -1rem; right: 1rem; animation: float 5s ease-in-out infinite; }
+  .chip-float-2 { bottom: -1rem; left: 1rem; animation: float 6s ease-in-out infinite .8s; }
+  .skill-tag { padding: .2rem .65rem; border-radius: 9999px; font-size: var(--fs-small); font-weight: 600; background: var(--badge-bg); color: var(--badge-text); border: 1px solid var(--badge-border); }
+  @media (max-width: 639px) { .hero-actions .btn { width: 100%; } }
+
+  /* Grid kartu: selalu rata tengah & simetris (Layanan / Harga / Portofolio) */
+  .cards-center { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap, 1rem); }
+  .cards-center > * { flex: 0 0 100%; max-width: 100%; min-width: 0; display: flex; }
+  .cards-center > * > * { flex: 1 1 auto; min-width: 0; }
+  @media (min-width: 640px) {
+    .cards-center > * { flex-basis: calc((100% - (var(--cols-md, 2) - 1) * var(--gap, 1rem)) / var(--cols-md, 2) - .1px); max-width: calc((100% - (var(--cols-md, 2) - 1) * var(--gap, 1rem)) / var(--cols-md, 2)); }
+  }
+  @media (min-width: 1024px) {
+    .cards-center > * { flex-basis: calc((100% - (var(--cols, 3) - 1) * var(--gap, 1rem)) / var(--cols, 3) - .1px); max-width: calc((100% - (var(--cols, 3) - 1) * var(--gap, 1rem)) / var(--cols, 3)); }
+  }
+
+  /* Layanan */
+  .svc-card { padding: var(--pad-services); border-radius: var(--r-services); }
+  .svc-card .icon-box { width: var(--icon-services, 2.75rem); height: var(--icon-services, 2.75rem); }
+  .point-list li { display: flex; gap: .5rem; align-items: flex-start; font-size: var(--fs-sub); line-height: 1.45; color: var(--text-muted); }
+  .point-list li span { min-width: 0; overflow-wrap: anywhere; }
+  .point-list svg { color: var(--accent); flex: none; margin-top: .2rem; }
+
+  /* Portofolio */
+  .filters { display: flex; flex-wrap: nowrap; gap: .6rem; overflow-x: auto; margin: 0 -1.25rem 1.5rem; padding: .25rem 1.25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+  .filters::-webkit-scrollbar { display: none; }
+  @media (min-width: 768px) { .filters { flex-wrap: wrap; justify-content: center; overflow: visible; margin: 0 0 2rem; padding: 0; } }
+  .chip { flex: none; scroll-snap-align: start; display: inline-flex; align-items: center; gap: .5rem; min-height: 2.5rem; padding: .45rem 1rem; border-radius: 9999px; font-weight: 600; font-size: .875rem; cursor: pointer; background: var(--card); color: var(--text-muted); border: 1px solid var(--card-border); transition: .25s; white-space: nowrap; }
+  .chip:hover { color: var(--text); border-color: var(--accent); }
+  .chip.active { background: var(--btn-bg); color: var(--btn-text); border-color: transparent; box-shadow: 0 10px 26px -12px var(--glow); }
+  .chip-count { font-size: .7rem; padding: .05rem .45rem; border-radius: 9999px; background: rgba(127,127,127,.2); }
+  .project-card { overflow: hidden; display: flex; flex-direction: column; border-radius: var(--r-portfolio); }
+  .pc-body { padding: var(--pad-portfolio); }
+  .thumb { position: relative; aspect-ratio: var(--thumb-ratio, 16 / 10); overflow: hidden; background: var(--bg-alt); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+  .project-card:hover .thumb img { transform: scale(1.07); }
+  .thumb-badge { position: absolute; top: .7rem; left: .7rem; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .thumb-overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 1rem; background: linear-gradient(to top, rgba(3,8,20,.75), transparent 60%); opacity: 0; transition: opacity .3s; }
+  .project-card:hover .thumb-overlay { opacity: 1; }
+  @media (hover: none) { .thumb-overlay { display: none; } }
+
+  /* Pricing */
+  .price-card { position: relative; padding: var(--pad-pricing); border-radius: var(--r-pricing); display: flex; flex-direction: column; }
+  .price-card.popular { border-color: var(--accent); box-shadow: 0 30px 80px -36px var(--glow); }
+  .ribbon { position: absolute; top: -.8rem; left: 50%; transform: translateX(-50%); padding: .25rem .9rem; border-radius: 9999px; font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: var(--btn-bg); color: var(--btn-text); white-space: nowrap; }
+  .price-num { font-size: var(--fs-price); font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+
+  /* Footer */
+  .social-btn { display: inline-grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: var(--btn2-bg); border: 1px solid var(--card-border); color: var(--text-muted); transition: .25s; }
+  .social-btn:hover { color: var(--btn-text); background: var(--btn-bg); border-color: transparent; transform: translateY(-3px); }
+
+  /* Tombol WhatsApp melayang (mudah dijangkau ibu jari) */
+  .wa-fab { position: fixed; z-index: 45; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); display: inline-flex; align-items: center; gap: .5rem; min-height: 3.25rem; padding: 0 1.2rem 0 1rem; border-radius: 9999px; background: #25d366; color: #05220f; font-weight: 800; font-size: .9rem; box-shadow: 0 14px 34px -10px rgba(37,211,102,.65), 0 4px 12px rgba(0,0,0,.25); opacity: 0; transform: translateY(14px) scale(.96); pointer-events: none; transition: opacity .35s, transform .35s, filter .25s; }
+  .wa-fab.show { opacity: 1; transform: none; pointer-events: auto; }
+  .wa-fab:hover { filter: brightness(1.06); }
+  body.modal-open .wa-fab { display: none; }
+
+  /* Modal */
+  .modal { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(2,6,16,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .modal.open { display: flex; animation: fade .25s ease; }
+  .modal-panel { width: 100%; max-height: 92vh; max-height: 92dvh; overflow-y: auto; background: var(--bg-alt); color: var(--text); border: 1px solid var(--card-border); border-radius: calc(var(--r-card) + 6px); box-shadow: 0 40px 100px -30px rgba(0,0,0,.8); animation: pop .35s cubic-bezier(.2,.9,.3,1.2); overscroll-behavior: contain; }
+  .modal-head { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1.1rem; background: var(--bg-alt); border-bottom: 1px solid var(--card-border); }
+  .tabs { display: flex; gap: .25rem; padding: 0 1rem; border-bottom: 1px solid var(--card-border); overflow-x: auto; position: sticky; top: 4.1rem; z-index: 4; background: var(--bg-alt); scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: .85rem 1rem; font-weight: 700; font-size: .875rem; color: var(--text-muted); border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; transition: .2s; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-color: var(--accent); }
+  .admin-row { display: flex; align-items: center; gap: .75rem; padding: .65rem; border-radius: calc(var(--r-card) * .6); border: 1px solid var(--card-border); background: var(--card); }
+  .admin-row img { width: 4rem; height: 2.7rem; object-fit: cover; border-radius: .5rem; flex: none; background: var(--bg); }
+  .upload-box { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+  @media (max-width: 639px) {
+    .modal { padding: 0; align-items: flex-end; }
+    .modal-panel { max-height: 94vh; max-height: 94dvh; border-radius: 1.25rem 1.25rem 0 0; }
+  }
+
+  /* Toast */
+  #toasts { position: fixed; z-index: 80; left: 50%; bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; flex-direction: column; gap: .5rem; align-items: center; width: calc(100% - 2rem); max-width: 26rem; pointer-events: none; }
+  @media (min-width: 768px) { #toasts { bottom: 1.25rem; } }
+  .toast { pointer-events: auto; display: flex; align-items: center; gap: .6rem; padding: .7rem 1.1rem; border-radius: 1.25rem; font-size: .875rem; font-weight: 600; background: var(--bg-alt); color: var(--text); border: 1px solid var(--accent); box-shadow: 0 16px 40px -16px rgba(0,0,0,.6); animation: toastIn .35s ease; }
+  .toast.error { border-color: #f87171; }
+  .toast.out { opacity: 0; transform: translateY(8px); transition: .3s; }
+
+  /* Reveal on scroll (hanya aktif jika JS berjalan) */
+  .reveal { transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+  .js .reveal:not(.in) { opacity: 0; transform: translateY(22px); }
+
+  /* Penyesuaian mobile */
+  @media (max-width: 639px) {
+    .input, .select, .textarea { font-size: 16px; } /* cegah auto-zoom iOS */
+    .icon-btn { width: 2.75rem; height: 2.75rem; }
+    .social-btn { width: 2.75rem; height: 2.75rem; }
+  }
+
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes ping { 75%,100% { transform: scale(2.1); opacity: 0; } }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(40px,30px) scale(1.15); } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pop { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: none; } }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+
+<body>
+<div class="bg-decor" aria-hidden="true">
+  <div class="grid-bg"></div>
+  <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
+</div>
+
+<!-- ================= NAVBAR ================= -->
+<header id="navbar" class="nav fixed top-0 inset-x-0 z-40">
+  <div class="container-x flex items-center justify-between h-[3.75rem] md:h-[4.5rem]">
+    <a href="#home" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight min-w-0" aria-label="Kembali ke atas">
+      <span class="logo-mark" id="navLogo"><span data-icon="code" data-cls="w-5 h-5"></span></span>
+      <span data-brand class="truncate"></span>
+    </a>
+    <nav id="navDesktop" class="hidden md:flex items-center gap-1" aria-label="Navigasi utama"></nav>
+    <div class="flex items-center gap-2">
+      <button id="themeToggle" class="theme-switch" type="button" aria-label="Ganti mode terang/gelap">
+        <span id="themeKnob" class="theme-knob"></span>
+      </button>
+      <div class="hidden md:block"><a id="navCta" href="#contact" class="btn btn-primary btn-sm"></a></div>
+      <button id="menuBtn" class="icon-btn md:hidden" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobileMenu"></button>
+    </div>
+  </div>
+  <div id="mobileMenu" class="mobile-menu md:hidden">
+    <div id="mobileMenuInner" class="container-x py-3 flex flex-col gap-1"></div>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section id="home" class="relative pt-24 md:pt-40 pb-12 md:pb-24">
+    <div class="container-x grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+      <div class="lg:col-span-7">
+        <div id="availBadge" class="badge reveal"><span id="availDot" class="pulse-dot"></span><span id="availText"></span></div>
+        <p id="heroTagline" class="mt-5 text-sm font-semibold tracking-wide uppercase text-accent reveal"></p>
+        <h1 id="heroTitle" class="hero-title mt-4 reveal"></h1>
+        <p id="heroDesc" class="text-muted t-lead mt-4 md:mt-5 max-w-xl reveal"></p>
+        <div class="hero-actions flex flex-col sm:flex-row gap-3 mt-6 md:mt-8 reveal">
+          <a href="#portfolio" id="heroCta1" class="btn btn-primary"></a>
+          <a id="heroWa" href="#contact" target="_blank" rel="noopener noreferrer" class="btn btn-ghost"></a>
+        </div>
+        <div id="heroStats" class="grid grid-cols-3 gap-3 sm:gap-4 mt-8 md:mt-12 max-w-lg"></div>
+      </div>
+      <div id="heroCardMount" class="lg:col-span-5 relative reveal"></div>
+    </div>
+  </section>
+
+  <!-- ================= SERVICES ================= -->
+  <section id="services" class="section-pad">
+    <div class="container-x">
+      <div data-sec-head="services"></div>
+      <div id="servicesGrid" class="cards-center"></div>
+    </div>
+  </section>
+
+  <!-- ================= PORTFOLIO ================= -->
+  <section id="portfolio" class="section-pad">
+    <div class="container-x">
+      <div data-sec-head="portfolio"></div>
+      <div id="filters" class="filters reveal" role="group" aria-label="Filter kategori"></div>
+      <div id="projectGrid" class="cards-center"></div>
+      <div id="emptyState" class="card text-center p-8 max-w-md mx-auto" hidden>
+        <p class="font-bold text-lg">Belum ada proyek di kategori ini</p>
+        <p class="text-muted t-sub mt-1">Pilih kategori lain atau tambahkan proyek lewat Admin CMS.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section id="pricing" class="section-pad">
+    <div class="container-x">
+      <div data-sec-head="pricing"></div>
+      <div id="pricingGrid" class="cards-center pt-3"></div>
+      <p id="pricingNote" class="text-center t-sub text-muted mt-6 md:mt-8 reveal"></p>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact" class="section-pad">
+    <div class="container-x">
+      <div class="grid lg:grid-cols-5 gap-8 lg:gap-14 items-start">
+        <div class="lg:col-span-2 reveal">
+          <span class="badge" id="contactEyebrow"></span>
+          <h2 class="sec-title mt-3" id="contactTitle"></h2>
+          <p class="text-muted t-sub mt-3" id="contactDesc"></p>
+          <ul id="contactInfo" class="mt-6 space-y-3"></ul>
+        </div>
+        <div class="lg:col-span-3 reveal">
+          <form id="leadForm" class="card p-5 md:p-8 space-y-4 md:space-y-5" novalidate>
+            <div>
+              <label class="label" for="lfName">Nama Anda</label>
+              <input id="lfName" name="name" class="input" type="text" placeholder="Contoh: Alexander Brian" autocomplete="name" maxlength="80">
+              <p class="field-error" id="lfNameErr" hidden>Nama wajib diisi.</p>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4 md:gap-5">
+              <div>
+                <label class="label" for="lfType">Tipe Proyek</label>
+                <select id="lfType" name="type" class="select"></select>
+              </div>
+              <div>
+                <label class="label" for="lfBudget">Estimasi Budget</label>
+                <select id="lfBudget" name="budget" class="select"></select>
+              </div>
+            </div>
+            <div>
+              <label class="label" for="lfNote">Ceritakan Kebutuhan Anda <span class="hint font-normal">(opsional)</span></label>
+              <textarea id="lfNote" name="note" rows="3" class="textarea" placeholder="Contoh: Kami punya jasa konveksi, butuh landing page + katalog produk." maxlength="600"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="lfSubmit"></button>
+            <p class="hint text-center">Pesan akan terbuka otomatis di WhatsApp dengan format yang sudah rapi — Anda tinggal menekan kirim.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t" style="border-color: var(--card-border);">
+  <div class="container-x pt-8 pb-24 md:py-10">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+      <div class="flex items-center gap-2.5 font-extrabold text-lg">
+        <span class="logo-mark"><span data-icon="code" data-cls="w-5 h-5"></span></span>
+        <span data-brand></span>
+      </div>
+      <div id="footerSocials" class="flex flex-wrap justify-center gap-2.5"></div>
+    </div>
+    <div class="mt-6 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 t-sub text-muted text-center" style="border-top: 1px solid var(--card-border);">
+      <p id="footerCopy"></p>
+      <div class="flex items-center gap-3">
+        <span id="footerCredit"></span>
+        <button id="adminOpen" type="button" class="icon-btn" style="width:2.1rem;height:2.1rem;" aria-label="Buka Admin CMS" title="Admin"><span data-icon="lock" data-cls="w-4 h-4"></span></button>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Tombol WhatsApp melayang -->
+<a id="waFab" class="wa-fab" href="#contact" target="_blank" rel="noopener noreferrer" aria-label="Chat via WhatsApp" hidden></a>
+
+<!-- ================= MODAL: PREVIEW PROYEK ================= -->
+<div id="previewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="pvTitle" aria-hidden="true">
+  <div class="modal-panel" style="max-width: 46rem;">
+    <div class="modal-head">
+      <p class="font-bold">Preview Proyek</p>
+      <button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-icon="x" data-cls="w-5 h-5"></span></button>
+    </div>
+    <div id="previewBody"></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: ADMIN CMS ================= -->
+<div id="adminModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" aria-hidden="true">
+  <div class="modal-panel" style="max-width: 56rem;">
+    <div class="modal-head">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="icon-box" style="width:2.5rem;height:2.5rem;"><span data-icon="lock" data-cls="w-5 h-5"></span></span>
+        <div class="min-w-0">
+          <h2 id="adminTitle" class="font-extrabold leading-tight">Admin CMS Portofolio</h2>
+          <p id="adminSub" class="t-small text-muted"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="adminLogout" class="btn btn-ghost btn-sm" hidden>Kunci</button>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><span data-icon="x" data-cls="w-5 h-5"></span></button>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <form id="adminLogin" class="p-6 md:p-8 max-w-md mx-auto" novalidate>
+      <p class="text-muted t-sub mb-5">Area ini khusus owner. Masukkan password admin untuk mengelola katalog portofolio.</p>
+      <label class="label" for="adminPass">Password</label>
+      <input id="adminPass" type="password" class="input" autocomplete="current-password" placeholder="••••••••">
+      <p id="adminLoginErr" class="field-error" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block mt-5">Masuk</button>
+    </form>
+
+    <!-- Dashboard -->
+    <div id="adminDash" hidden>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab-btn active" data-tab="projects" role="tab">Proyek</button>
+        <button type="button" class="tab-btn" data-tab="contact" role="tab">Kontak & Sosial Media</button>
+        <button type="button" class="tab-btn" data-tab="data" role="tab">Data & Keamanan</button>
+      </div>
+
+      <!-- Tab: Proyek -->
+      <div id="tab-projects" class="p-5 md:p-6 space-y-8">
+        <form id="projectForm" class="space-y-4" novalidate>
+          <h3 id="pfHeading" class="font-bold text-lg">Tambah Proyek Baru</h3>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="label" for="pfTitle">Nama Proyek *</label><input id="pfTitle" class="input" maxlength="80" placeholder="Contoh: Company Profile PO Armada Jaya"></div>
+            <div><label class="label" for="pfClient">Nama Klien</label><input id="pfClient" class="input" maxlength="80" placeholder="Contoh: PO Armada Jaya"></div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="label" for="pfCategory">Kategori / Tipe Bisnis *</label>
+              <input id="pfCategory" class="input" list="catList" maxlength="40" placeholder="Pilih atau ketik kategori baru">
+              <datalist id="catList"></datalist>
+            </div>
+            <div><label class="label" for="pfDemo">Link Demo Website</label><input id="pfDemo" class="input" inputmode="url" placeholder="https://contoh-klien.netlify.app"></div>
+          </div>
+          <div><label class="label" for="pfDesc">Deskripsi Singkat</label><textarea id="pfDesc" rows="3" class="textarea" maxlength="320" placeholder="Jelaskan fitur utama & hasil proyek (maks. 320 karakter)"></textarea></div>
+          <div>
+            <label class="label" for="pfImage">Gambar Thumbnail <span class="hint font-normal">(JPG, JPEG, PNG)</span></label>
+            <div class="grid sm:grid-cols-5 gap-4 items-start">
+              <div class="sm:col-span-3 space-y-3">
+                <input id="pfImage" class="input" inputmode="url" placeholder="URL gambar (https://...) atau path (images/foto.jpg)">
+                <div class="upload-box">
+                  <label class="btn btn-ghost btn-sm" for="pfFile" style="cursor:pointer;"><span data-icon="upload" data-cls="w-4 h-4"></span> Upload dari perangkat</label>
+                  <input id="pfFile" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,.jpg,.jpeg,.png,.webp" class="sr-only">
+                  <button type="button" id="pfImgClear" class="btn btn-danger btn-sm" hidden>Hapus gambar upload</button>
+                </div>
+                <p id="pfImgNote" class="hint">Gambar upload otomatis diperkecil (maks. 900px) agar hemat penyimpanan browser. Jika kosong, dibuatkan thumbnail otomatis.</p>
+              </div>
+              <div class="sm:col-span-2"><div class="thumb card" style="border-radius: var(--r-inner);"><img id="pfPreview" alt="Pratinjau thumbnail"></div></div>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3 pt-1">
+            <button type="submit" class="btn btn-primary" id="pfSave">Simpan Proyek</button>
+            <button type="button" class="btn btn-ghost" id="pfCancel" hidden>Batal Edit</button>
+          </div>
+        </form>
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-lg">Daftar Proyek <span id="adminCount" class="text-muted font-medium t-sub"></span></h3>
+          </div>
+          <div id="adminList" class="space-y-2.5"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Kontak -->
+      <form id="tab-contact" class="p-5 md:p-6 space-y-5" hidden novalidate>
+        <h3 class="font-bold text-lg">Kontak & Sosial Media</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div><label class="label" for="cfWa">Nomor WhatsApp Admin</label><input id="cfWa" class="input" inputmode="tel" placeholder="6281234567890"><p class="hint mt-1">Format bebas: 0812…, +62812…, atau 62812… (otomatis dirapikan).</p></div>
+          <div><label class="label" for="cfEmail">Email</label><input id="cfEmail" class="input" type="email" placeholder="halo@namabrand.com"></div>
+        </div>
+        <div>
+          <label class="label" for="cfAvatar">Foto Profil (Header & Hero) <span class="hint font-normal">(JPG, JPEG, PNG)</span></label>
+          <div class="flex items-start gap-4 flex-wrap">
+            <div id="cfAvatarBox" class="avatar" style="width:3.5rem;height:3.5rem;font-size:1.1rem;"></div>
+            <div class="flex-1 space-y-3" style="min-width:14rem;">
+              <input id="cfAvatar" class="input" inputmode="url" placeholder="URL foto (https://...) atau path (images/pp.png)">
+              <div class="upload-box">
+                <label class="btn btn-ghost btn-sm" for="cfAvatarFile" style="cursor:pointer;"><span data-icon="upload" data-cls="w-4 h-4"></span> Upload foto</label>
+                <input id="cfAvatarFile" type="file" accept="image/png,image/jpeg,image/jpg,image/webp,.jpg,.jpeg,.png,.webp" class="sr-only">
+                <button type="button" id="cfAvatarClear" class="btn btn-danger btn-sm" hidden>Hapus foto upload</button>
+              </div>
+              <p class="hint">Kosongkan untuk memakai foto bawaan dari config (<code>avatarUrl</code>).</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="label">Link Sosial Media <span class="hint font-normal">(kosongkan untuk menyembunyikan)</span></p>
+          <div id="cfSocials" class="grid sm:grid-cols-2 gap-4"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+      </form>
+
+      <!-- Tab: Data -->
+      <div id="tab-data" class="p-5 md:p-6 space-y-8" hidden>
+        <div class="card p-5" style="border-color: var(--badge-border);">
+          <p class="font-bold">Penting: data tersimpan di browser ini saja</p>
+          <p class="t-sub text-muted mt-1">Data CMS disimpan di browser (LocalStorage + IndexedDB sebagai cadangan). Perubahan langsung tampil di browser Anda, tetapi pengunjung lain baru melihatnya setelah Anda memindahkan data ke <code>defaultProjects</code> di config lalu deploy ulang. Gunakan tombol di bawah untuk backup atau menyalin data.</p>
+          <p id="storageStatus" class="hint mt-2"></p>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-3">Backup & Pindah Data</h3>
+          <div class="flex flex-wrap gap-3">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnExport"><span data-icon="download" data-cls="w-4 h-4"></span> Export JSON</button>
+            <label class="btn btn-ghost btn-sm" for="importFile" style="cursor:pointer;"><span data-icon="upload" data-cls="w-4 h-4"></span> Import JSON</label>
+            <input id="importFile" type="file" accept="application/json,.json" class="sr-only">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnCopy">Salin JSON Proyek</button>
+            <button type="button" class="btn btn-danger btn-sm" id="btnReset">Reset ke Data Awal</button>
+          </div>
+        </div>
+        <form id="pwForm" class="max-w-md space-y-4" novalidate>
+          <h3 class="font-bold text-lg">Ganti Password Admin</h3>
+          <div><label class="label" for="pwNew">Password Baru</label><input id="pwNew" type="password" class="input" autocomplete="new-password" placeholder="Minimal 6 karakter"></div>
+          <div><label class="label" for="pwConfirm">Ulangi Password</label><input id="pwConfirm" type="password" class="input" autocomplete="new-password"></div>
+          <button type="submit" class="btn btn-primary btn-sm">Simpan Password</button>
+          <p class="hint">Catatan: proteksi ini hanya di sisi browser (client-side) — cukup untuk menyembunyikan panel dari pengunjung awam, bukan pengganti keamanan server.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   1) CONFIGURATION — ubah semua tampilan & data utama dari sini
+   ===================================================================== */
+const portfolioConfig = {
+
+  /* ---------- Data informasi utama ---------- */
+  info: {
+    brand: 'Reindev',
+    role: 'Web Design & Developer',
+    tagline: '',
+    headline: {
+      before: 'Bangun Website Bisnis yang',
+      highlight: 'Cepat, Modern & Siap Closing',
+      after: 'Pelanggan.'
+    },
+    description: 'Solusi pembuatan website profesional untuk berbagai skala usaha. Menghadirkan platform digital yang cepat, estetik, dan mudah dikelola secara mandiri. Dikerjakan dengan detail yang rapi dan komitmen penuh pada waktu.',
+    availability: { active: true, text: 'Available for New Projects', inactiveText: 'Slot Penuh — Waiting List Dibuka' },
+    whatsapp: '6282281743338',          // nomor admin (format bebas: 0812…, +62812…, 62812…)
+    email: 'rejouirdansla@gmail.com',
+    responseTime: 'Biasanya membalas < 1 jam (09.00–21.00 WIB)',
+    avatarUrl: 'images/pp.png',                       // foto profil: .jpg / .jpeg / .png (path relatif atau URL). Kosong = inisial brand
+    avatarInHeader: true,                             // true = foto profil juga tampil sebagai logo di navbar (jika gagal dimuat, kembali ke ikon)
+    ctaNav: 'Hubungi Kami',
+    ctaPrimary: 'Lihat Portofolio',
+    ctaWhatsApp: 'Diskusi Projek (WA)',
+    floatingWa: { enabled: true, label: 'Chat WhatsApp' },   // tombol WA melayang (muncul setelah scroll sedikit)
+    heroChips: ['Mobile-First & Cepat'],
+    skills: ['Modern UI', 'Responsive', 'SEO Friendly', 'Ready to Use'],
+    codeSample: [
+      'const project = {',
+      '  type: "Company Profile",',
+      '  stack: ["HTML", "Tailwind", "JS"],',
+      '  responsive: true,',
+      '  status: "Live 🚀"',
+      '};'
+    ],
+    typing: { enabled: true, speed: 55, loop: true },  // animasi mengetik pada card hero (speed = rata-rata ms per karakter)
+    footerCredit: 'Dibuat dengan HTML, Tailwind & JavaScript'
+  },
+
+  /* ---------- Admin CMS ---------- */
+  admin: {
+    password: 'CRM*588$'   // GANTI! (atau ganti lewat panel: tab "Data & Keamanan"). Buka panel: ikon kunci di footer atau URL#admin
+  },
+
+  /* ---------- Tema warna (Dark default & Light) ---------- */
+  theme: {
+    defaultMode: 'dark',   // 'dark' | 'light'  (pilihan pengunjung tersimpan otomatis)
+    colors: {
+      dark: {
+        bg: '#050a18',                       // background global
+        bgAlt: '#0a1226',                    // background section alternatif / modal
+        card: 'rgba(14, 26, 54, 0.62)',      // background card
+        cardBorder: 'rgba(96, 165, 250, 0.16)', // border card
+        text: '#e8eefb',                     // teks utama
+        textMuted: '#93a4c3',                // teks sekunder
+        accent: '#38bdf8',                   // aksen utama (cyan)
+        accent2: '#60a5fa',                  // aksen kedua (electric blue)
+        gradFrom: '#38bdf8', gradVia: '#3b82f6', gradTo: '#818cf8',   // gradien teks & dekorasi
+        btnBg: 'linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%)',   // tombol utama
+        btnText: '#04101f',
+        btn2Bg: 'rgba(255,255,255,0.04)',    // tombol sekunder
+        btn2Text: '#e8eefb',
+        btn2Border: 'rgba(148,163,184,0.28)',
+        badgeBg: 'rgba(56,189,248,0.10)', badgeText: '#7dd3fc', badgeBorder: 'rgba(56,189,248,0.30)',
+        navBg: 'rgba(5,10,24,0.72)',
+        glow: 'rgba(56,189,248,0.28)',       // efek glow / fokus
+        inputBg: 'rgba(6,12,28,0.70)',
+        shadow: '0 20px 50px -25px rgba(0,0,0,0.70)'
+      },
+      light: {
+        bg: '#f3f6fb',
+        bgAlt: '#e9eff8',
+        card: 'rgba(255,255,255,0.86)',
+        cardBorder: 'rgba(37,99,235,0.14)',
+        text: '#0b1730',
+        textMuted: '#51627f',
+        accent: '#2563eb',                   // Royal Blue
+        accent2: '#1d4ed8',
+        gradFrom: '#1d4ed8', gradVia: '#2563eb', gradTo: '#0ea5e9',
+        btnBg: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+        btnText: '#ffffff',
+        btn2Bg: 'rgba(255,255,255,0.75)',
+        btn2Text: '#0b1730',
+        btn2Border: 'rgba(37,99,235,0.25)',
+        badgeBg: 'rgba(37,99,235,0.08)', badgeText: '#1d4ed8', badgeBorder: 'rgba(37,99,235,0.22)',
+        navBg: 'rgba(243,246,251,0.80)',
+        glow: 'rgba(37,99,235,0.26)',
+        inputBg: '#ffffff',
+        shadow: '0 14px 40px -20px rgba(15,35,80,0.28)'
+      }
+    }
+  },
+
+  /* ---------- Tipografi & ukuran teks ---------- */
+  typography: {
+    fontFamily: 'Plus Jakarta Sans',         // nama font Google (mis. 'Inter', 'Poppins', 'Manrope')
+    fallback: 'Inter',
+    weights: '400;500;600;700;800',
+    sizes: {                                 // semua nilai CSS valid (rem, px, clamp(...))
+      hero:  'clamp(1.9rem, 5.2vw, 3.5rem)',   // headline hero
+      h2:    'clamp(1.5rem, 3.6vw, 2.25rem)',  // judul section
+      h3:    '1.0625rem',                      // judul card (Layanan / Harga / Portofolio)
+      lead:  'clamp(.95rem, 2.3vw, 1.125rem)', // deskripsi hero
+      body:  '1rem',                           // teks dasar
+      sub:   '.875rem',                        // sub-teks: deskripsi card, poin fitur, catatan
+      small: '.75rem',                         // label kecil, meta, hint, tag
+      stat:  'clamp(1.5rem, 4vw, 2rem)',       // angka statistik hero
+      price: 'clamp(1.75rem, 4vw, 2.1rem)'     // angka harga
+    }
+  },
+
+  /* ---------- Layout, tombol & card ---------- */
+  layout: {
+    maxWidth: '1200px',
+    cardRadius: 'lg',        // radius default semua card: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | nilai CSS (mis. '14px')
+    avatarShape: 'rounded',  // 'circle' | 'rounded'
+    buttonSize: 'md',        // preset tombol utama: 'sm' | 'md' | 'lg'
+    buttonShape: 'pill',     // 'pill' | 'rounded'
+    sectionPadding: { mobile: '3.25rem', desktop: '5.5rem' },   // jarak atas-bawah tiap section
+
+    /* Ukuran & padding tombol (edit angka di sini). minH = tinggi minimum agar nyaman disentuh jempol */
+    buttons: {
+      sm: { py: '.55rem', px: '1rem',   fs: '.8125rem', minH: '2.5rem'  },
+      md: { py: '.72rem', px: '1.4rem', fs: '.92rem',   minH: '2.75rem' },
+      lg: { py: '.95rem', px: '1.8rem', fs: '1.02rem',  minH: '3.25rem' }
+    },
+
+    /* Ukuran tiap jenis card. Layout desktop: 'columns' kolom, selalu rata tengah (simetris).
+       paddingMobile / gapMobile = nilai khusus layar HP (opsional). radius kosong = ikut cardRadius. */
+    cards: {
+      services: { columns: 3, columnsTablet: 2, gap: '1.25rem', gapMobile: '.875rem', padding: '1.35rem', paddingMobile: '1.1rem', radius: 'lg', iconSize: '2.75rem' },
+      pricing:  { columns: 3, columnsTablet: 2, gap: '1.25rem', gapMobile: '1rem',    padding: '1.5rem',  paddingMobile: '1.25rem', radius: 'lg' },
+      portfolio:{ columns: 3, columnsTablet: 2, gap: '1.25rem', gapMobile: '1rem',    padding: '1.1rem',  paddingMobile: '1rem',    radius: 'lg', thumbRatio: '16 / 9', descLines: 3 }
+    }
+  },
+
+  /* ---------- Navigasi ---------- */
+  nav: [
+    { id: 'home', label: 'Home' },
+    { id: 'services', label: 'Services' },
+    { id: 'portfolio', label: 'Portfolio' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'contact', label: 'Contact' }
+  ],
+
+  /* ---------- Statistik hero (angka contoh — ganti dengan data asli) ---------- */
+  stats: [
+    { value: 99, suffix: '+', label: 'Project Selesai' },
+    { value: 100, suffix: '%', label: 'Client Puas' },
+    { value: 1,  suffix: ' Hari', label: 'Proses Cepat' }
+  ],
+
+  /* ---------- Judul section ---------- */
+  sections: {
+    services:  { eyebrow: 'Layanan', title: 'Solusi Website untuk Setiap Jenis Bisnis', desc: 'Pilih layanan yang paling sesuai — semua dibangun mobile-first, cepat dimuat, dan siap online.' },
+    portfolio: { eyebrow: 'Portofolio', title: 'Karya Pilihan yang Sudah Live', desc: 'Beberapa website yang pernah kami kerjakan. Filter berdasarkan jenis bisnis untuk melihat yang paling relevan.' },
+    pricing:   { eyebrow: 'Paket Harga', title: 'Harga Transparan, Tanpa Biaya Tersembunyi', desc: 'Mulai dari paket hemat sampai sistem custom. Semua paket sudah termasuk desain responsif.' },
+    contact:   { eyebrow: 'Konsultasi Gratis', title: 'Punya Ide Website? Ayo Diskusikan.', desc: 'Isi form singkat di samping, pesan Anda langsung terkirim ke WhatsApp saya dengan format yang rapi.' }
+  },
+
+  /* ---------- Layanan ---------- */
+  services: [
+    { icon: 'layout', title: 'Landing Page / Single Page', desc: 'Solusi satu halaman padat informasi yang berfokus untuk promosi produk, jasa, atau profil singkat secara instan.', points: ['Desain Sales-Focused & Mobile-First', 'Tombol CTA Direct WhatsApp', 'Super Cepat & Bebas Biaya Bulanan'] },
+    { icon: 'bag', title: 'Katalog / Produk Dinamis (CMS)', desc: 'Website katalog produk atau jasa interaktif yang dilengkapi panel dashboard admin mandiri, sehingga bisa update data kapan saja tanpa bongkar kode.', points: ['Panel Admin CMS Mandiri', 'AI Agent Rekomendasi Produk Otomatis','Katalog Interaktif + Filter Kategori'] },
+    { icon: 'briefcase', title: 'Company Profile Profesional', desc: 'Website multi-section yang elegan untuk membangun kredibilitas bisnis, menampilkan visi-misi, layanan, galeri, dan peta lokasi.', points: ['Struktur Halaman Fleksibel & Elegan', 'Galeri foto & preview lokasi (Maps)', 'Integrasi Kontak & Sosial Media'] }
+  ],
+
+  /* ---------- Kategori filter portofolio ---------- */
+  categories: ['All', 'Landing Page', 'Katalog Dinamis', 'Company Profile'],
+
+  /* ---------- Proyek bawaan (contoh — ganti dengan karya asli, atau kelola via Admin CMS) ----------
+     image: URL / path gambar .jpg .jpeg .png (kosong = thumbnail otomatis) | demoUrl: link website live */
+  defaultProjects: [
+    { id: 'p1', title: 'Landing Page UMKM', client: 'BREAD BEAR', category: 'Landing Page', description: 'Solusi 1 halaman yang pas untuk toko roti, kuliner, atau produk tunggal agar langsung di-order via WhatsApp.', image: 'images/bear.png', demoUrl: 'https://reindev-landingpagebasic.netlify.app' },
+    { id: 'p2', title: 'Landing Page Service', client: 'BERSIH BERSIH', category: 'Landing Page', description: 'Halaman promo ringkas yang ideal untuk jasa harian seperti cleaning service, salon, atau bengkel panggilan.', image: 'images/bersih.png', demoUrl: 'https://reindev-landingpagebasic2.netlify.app' },
+    { id: 'p3', title: 'Katalog Diamis + AI Agent', client: 'Rimba Asri Tour & Travel', category: 'Katalog Dinamis', description: 'Katalog interaktif lengkap dengan sistem filter paket wisata dan asisten AI untuk memandu pilihan pelanggan.', image: 'images/travel.png', demoUrl: 'https://reindev-katalogdinamis.netlify.app' },
+    { id: 'p4', title: 'Professional Katalog Diamis', client: 'CRM TRANSPORT', category: 'Katalog Dinamis', description: 'Platform sewa kendaraan atau travel bus yang memudahkan pelanggan melihat armada dan langsung pesan.', image: 'images/crm.png', demoUrl: 'https://reindev-katalogdinamis-crm.netlify.app' },
+    { id: 'p5', title: 'Professional Company Profile', client: 'SPARK Machinery Corp', category: 'Company Profile', description: 'Profil korporat elegan untuk membangun kredibilitas perusahaan manufaktur, industri, atau B2B.', image: 'images/profile.png', demoUrl: 'https://reindev-companyprofile.netlify.app' },
+  ],
+
+  /* ---------- Paket harga (angka contoh — sesuaikan) ----------
+     projectType harus sama persis dengan salah satu isi `projectTypes` di bawah agar form otomatis terpilih */
+  pricing: [
+    { name: 'Landing Page Basic', price: 'Rp 450rb', unit: 'mulai dari', desc: 'Cocok untuk profil singkat, promosi produk tunggal, atau UMKM yang ingin segera tampil online.', projectType: 'Landing Page Basic', popular: true, badge: 'Paling Populer', cta: 'Hubungi Kami',
+      features: ['1 Halaman Landing Responsif', 'Desain Modern & Mobile-First', 'Tombol & Form Direct WhatsApp', 'Optimasi Kecepatan & SEO Dasar', 'Link Multi Platform', 'Bonus Spesial: File Koding, Aset & Panduan Edit', 'Garansi: Termasuk 2x Kesempatan Revisi'] },
+    { name: 'Katalog Dinamis (CMS + AI Agent)', price: 'Rp 650rb', unit: 'mulai dari', desc: 'Toko, travel, atau usaha yang sering update produk/layanan dan butuh interaksi cerdas untuk pelanggan.', projectType: 'Katalog Dinamis', popular: false, cta: 'Hubungi Kami',
+      features: ['Panel Admin CMS Mandiri (Update produk/foto tanpa koding)', 'Katalog Interaktif + Filter Kategori', 'AI Recommendation Agent (Fitur tanya-jawab otomatis bagi calon customer untuk memilih produk/jasa berdasarkan keinginan & budget)', 'Integrasi Sosial Media & Kontak Lengkap', 'Form & Tombol Direct WhatsApp', 'Desain Responsif & Modern', 'Bonus Spesial: File Koding, Aset & Panduan Edit', 'Garansi: Termasuk 3x Kesempatan Revisi'] },
+    { name: 'Company Profile', price: 'Rp 850rb', unit: 'mulai dari', desc: 'Bisnis yang membutuhkan kredibilitas lebih mendalam dengan beberapa seksi halaman informasi.', projectType: 'Company Profile', popular: false, badge: 'Paling Populer', cta: 'Hubungi Kami',
+      features: ['Struktur Halaman Fleksibel', 'Profil Bisnis & Galeri Usaha', 'Integrasi Google Maps & Sosmed', 'Tombol Direct WhatsApp', 'Optimasi Kecepatan & Kredibilitas', 'Bonus Spesial: File Koding, Aset & Panduan Edit', 'Garansi: Termasuk 3x Kesempatan Revisi'] }
+  ],
+  pricingNote: '* Harga final menyesuaikan kompleksitas, jumlah halaman, dan fitur tambahan. Domain & hosting premium tidak termasuk.',
+
+  /* ---------- Opsi form konsultasi ---------- */
+  projectTypes: ['Landing Page Basic', 'Katalog Dinamis', 'Company Profile', 'Konsultasi Project'],
+  budgets: ['< Rp 500rb', '> Rp 600-800rb', '1jt +', 'Belum tahu / Diskusi dulu'],
+
+  /* ---------- Sosial media (kosongkan url untuk menyembunyikan) ---------- */
+  socials: [
+    { id: 'instagram', label: 'Instagram', url: 'https://instagram.com/' },
+    { id: 'github',    label: 'GitHub',    url: 'https://github.com/' },
+    { id: 'linkedin',  label: 'LinkedIn',  url: '' },
+    { id: 'tiktok',    label: 'TikTok',    url: '' },
+    { id: 'youtube',   label: 'YouTube',   url: '' }
+  ]
+};
+
+
+/* =====================================================================
+   2) APLIKASI (tidak perlu diubah untuk kustomisasi biasa)
+   ===================================================================== */
+(() => {
+  'use strict';
+  const C = portfolioConfig;
+  const KEY = 'pf_data_v1', THEME_KEY = 'pf_theme', PASS_KEY = 'pf_admin_pass_v1';
+  const root = document.documentElement;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Nilai cadangan jika ada key yang belum diisi di config */
+  const DEF = {
+    sizes: { hero: 'clamp(1.9rem, 5.2vw, 3.5rem)', h2: 'clamp(1.5rem, 3.6vw, 2.25rem)', h3: '1.0625rem', lead: 'clamp(.95rem, 2.3vw, 1.125rem)', body: '1rem', sub: '.875rem', small: '.75rem', stat: 'clamp(1.5rem, 4vw, 2rem)', price: 'clamp(1.75rem, 4vw, 2.1rem)' },
+    buttons: {
+      sm: { py: '.55rem', px: '1rem', fs: '.8125rem', minH: '2.5rem' },
+      md: { py: '.72rem', px: '1.4rem', fs: '.92rem', minH: '2.75rem' },
+      lg: { py: '.95rem', px: '1.8rem', fs: '1.02rem', minH: '3.25rem' }
+    },
+    card: { columns: 3, columnsTablet: 2, gap: '1.25rem', padding: '1.35rem' },
+    section: { mobile: '3.25rem', desktop: '5.5rem' }
+  };
+  const RADIUS = { none: '0px', sm: '.25rem', md: '.375rem', lg: '.5rem', xl: '.75rem', '2xl': '1rem', '3xl': '1.5rem', full: '9999px' };
+  const R = v => RADIUS[v] || (v ? String(v) : '1rem');
+
+  /* ---------- Util ---------- */
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const cyrb53 = (str, seed = 0) => {
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  };
+  function normalizeUrl(u) {
+    u = String(u || '').trim(); if (!u) return '';
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u.replace(/^\/+/, '');
+    try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ''; } catch (e) { return ''; }
+  }
+
+  /* Validasi gambar: mendukung data-URL (png/jpg/jpeg/webp/gif), URL http(s), dan path RELATIF
+     seperti "images/pp.png", "./foto.JPG", "/aset/logo.jpeg" (sebelumnya path tanpa "/" di depan
+     salah diubah menjadi https://images/... sehingga gambar tampil rusak). */
+  const IMG_EXT = /\.(png|jpe?g|webp|gif|svg|avif)(\?[^#]*)?(#.*)?$/i;
+  function normalizeImg(u) {
+    u = String(u || '').trim(); if (!u) return '';
+    if (/^data:image\/(png|jpe?g|jpg|webp|gif);base64,/i.test(u)) return u;
+    if (/^data:/i.test(u)) return '';
+    if (/[<>"'\\]/.test(u)) return '';
+    if (/^\/\//.test(u)) return normalizeUrl('https:' + u);                 // //cdn.site/foto.jpg
+    if (/^https?:\/\//i.test(u)) return normalizeUrl(u);
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';                          // skema lain (javascript:, file:, dll) ditolak
+    if (/^(\/|\.\/|\.\.\/)/.test(u)) return u.replace(/ /g, '%20');         // path relatif / absolut situs
+    const hasSlash = u.includes('/');
+    if (!hasSlash) return IMG_EXT.test(u) ? u.replace(/ /g, '%20') : normalizeUrl(u);   // "pp.png" -> relatif; "domain.com" -> https
+    const first = u.split('/')[0];
+    if (first.includes('.')) return normalizeUrl(u);                         // "i.imgur.com/a.jpg" -> https://i.imgur.com/a.jpg
+    return u.replace(/ /g, '%20');                                           // "images/pp.png" -> relatif
+  }
+
+  /* ---------- Ikon ---------- */
+  const ICONS = {
+    code: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
+    sun: '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>',
+    moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    menu: '<path d="M3 12h18M3 6h18M3 18h18"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    arrow: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    external: '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+    trash: '<path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    layout: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>',
+    briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+    bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/>',
+    cpu: '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+    zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+    send: '<path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
+    whatsapp: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+    mail: '<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+    instagram: '<rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/>',
+    github: '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>',
+    linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
+    youtube: '<path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><path d="m9.75 15.02 5.75-3.27-5.75-3.27z"/>',
+    tiktok: '<path d="M16 3v11.5a4.5 4.5 0 1 1-4.5-4.5M16 3c.4 2.6 2.2 4.4 5 4.6"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'
+  };
+  const I = (name, cls = 'w-5 h-5') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+  const fillIcons = (scope = document) => $$('[data-icon]', scope).forEach(el => { el.innerHTML = I(el.dataset.icon, el.dataset.cls || 'w-5 h-5'); el.removeAttribute('data-icon'); });
+
+  /* Tampilkan gambar di dalam wadah; jika gagal dimuat, wadah tetap menampilkan fallback (tidak pernah broken image) */
+  function setImgOrFallback(box, src, alt, fallbackHtml) {
+    if (!box) return;
+    const token = String(Math.random()); box.dataset.imgToken = token;
+    box.innerHTML = fallbackHtml;
+    if (!src) return;
+    const img = new Image();
+    img.alt = alt; img.decoding = 'async';
+    img.onload = () => { if (box.dataset.imgToken === token) { box.innerHTML = ''; box.appendChild(img); } };
+    img.onerror = () => { /* biarkan fallback */ };
+    img.src = src;
+  }
+
+  /* ---------- Thumbnail otomatis ---------- */
+  function placeholder(title = 'Project', cat = '') {
+    const h = (cyrb53(title + cat) % 60) + 190;
+    const t = esc(String(title).slice(0, 34));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h},70%,13%)"/><stop offset="1" stop-color="hsl(${h + 30},80%,27%)"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/><rect x="80" y="64" width="640" height="340" rx="18" fill="#0b1224" stroke="hsl(${h},90%,65%)" stroke-opacity=".5"/><path d="M80 82a18 18 0 0 1 18-18h604a18 18 0 0 1 18 18v26H80z" fill="#111c38"/><circle cx="112" cy="86" r="6" fill="#f87171"/><circle cx="134" cy="86" r="6" fill="#fbbf24"/><circle cx="156" cy="86" r="6" fill="#34d399"/><rect x="120" y="146" width="290" height="22" rx="8" fill="hsl(${h},90%,65%)"/><rect x="120" y="186" width="410" height="12" rx="6" fill="#33415f"/><rect x="120" y="208" width="350" height="12" rx="6" fill="#33415f"/><rect x="120" y="258" width="130" height="38" rx="19" fill="hsl(${h},90%,60%)"/><rect x="450" y="240" width="220" height="130" rx="14" fill="#16213f"/><text x="400" y="454" font-family="Arial,sans-serif" font-size="22" font-weight="700" text-anchor="middle" fill="#cfe3ff">${t}</text></svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  const thumbOf = p => normalizeImg(p.image) || placeholder(p.title || p.client, p.category);
+
+  /* ---------- Penyimpanan data (LocalStorage + IndexedDB cadangan) ----------
+     - Perubahan CMS ditulis ke keduanya; saat dimuat dipakai yang paling baru (savedAt).
+     - IndexedDB berkapasitas jauh lebih besar, jadi gambar upload tidak lagi membuat penyimpanan "penuh".
+     - Jika browser menolak semua penyimpanan (mode privat/iframe), tampilan tetap ter-update dan pengguna diberi peringatan. */
+  const store = {
+    caps: { ls: false, idb: false },
+    dbP: null,
+    probe() {
+      try { const k = '__pf_probe'; localStorage.setItem(k, '1'); localStorage.removeItem(k); this.caps.ls = true; } catch (e) { this.caps.ls = false; }
+    },
+    readLocal() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } },
+    writeLocal(obj) { try { localStorage.setItem(KEY, JSON.stringify(obj)); return true; } catch (e) { return false; } },
+    removeLocal() { try { localStorage.removeItem(KEY); } catch (e) {} },
+    openDB() {
+      if (!this.dbP) this.dbP = new Promise(res => {
+        try {
+          if (!window.indexedDB) return res(null);
+          const rq = indexedDB.open('pf_db', 1);
+          rq.onupgradeneeded = () => { try { rq.result.createObjectStore('kv'); } catch (e) {} };
+          rq.onsuccess = () => { this.caps.idb = true; res(rq.result); };
+          rq.onerror = () => res(null);
+          rq.onblocked = () => res(null);
+        } catch (e) { res(null); }
+      });
+      return this.dbP;
+    },
+    async readIDB() {
+      const db = await this.openDB(); if (!db) return null;
+      return new Promise(res => { try { const rq = db.transaction('kv', 'readonly').objectStore('kv').get(KEY); rq.onsuccess = () => res(rq.result || null); rq.onerror = () => res(null); } catch (e) { res(null); } });
+    },
+    async writeIDB(obj) {
+      const db = await this.openDB(); if (!db) return false;
+      return new Promise(res => { try { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(clone(obj), KEY); tx.oncomplete = () => res(true); tx.onerror = () => res(false); tx.onabort = () => res(false); } catch (e) { res(false); } });
+    },
+    async clearIDB() {
+      const db = await this.openDB(); if (!db) return false;
+      return new Promise(res => { try { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete(KEY); tx.oncomplete = () => res(true); tx.onerror = () => res(false); tx.onabort = () => res(false); } catch (e) { res(false); } });
+    }
+  };
+  store.probe();
+
+  const defaults = () => ({
+    projects: clone(C.defaultProjects),
+    contact: { whatsapp: C.info.whatsapp, email: C.info.email, avatar: '' },
+    socials: clone(C.socials),
+    savedAt: 0
+  });
+  const validProject = p => p && typeof p === 'object' && typeof p.id === 'string' && typeof p.title === 'string';
+  function normalize(p) {
+    const d = defaults();
+    if (!p || typeof p !== 'object') return d;
+    return {
+      projects: Array.isArray(p.projects) ? p.projects.filter(validProject) : d.projects,
+      contact: { ...d.contact, ...(p.contact || {}) },
+      socials: d.socials.map(s => { const f = Array.isArray(p.socials) && p.socials.find(x => x && x.id === s.id); return f ? { ...s, url: String(f.url || '') } : s; }),
+      savedAt: Number(p.savedAt) || 0
+    };
+  }
+  const rawLocal = store.readLocal();
+  let data = normalize(rawLocal);
+  let adminHook = null; // diisi saat admin dibuka
+
+  /* Simpan perubahan: UI langsung di-render ulang, lalu ditulis ke penyimpanan */
+  function commit(mutator) {
+    const next = clone(data); mutator(next); next.savedAt = Date.now();
+    data = next; renderDynamic(); if (adminHook) adminHook();
+    const lsOk = store.writeLocal(next);
+    store.writeIDB(next).then(idbOk => {
+      if (!lsOk && !idbOk) toast('Perubahan tampil, tetapi browser menolak penyimpanan permanen (mode privat / penyimpanan penuh). Segera Export JSON agar data aman.', 'error');
+    });
+    return true;
+  }
+
+  /* Muat ulang dari IndexedDB bila lebih baru dari LocalStorage; migrasikan data lama ke IndexedDB */
+  store.readIDB().then(p => {
+    if (p && (Number(p.savedAt) || 0) > (data.savedAt || 0)) {
+      data = normalize(p); renderDynamic(); if (adminHook) adminHook();
+    } else if (rawLocal && !p) {
+      if (!data.savedAt) data.savedAt = Date.now();
+      store.writeIDB(data);
+    }
+  });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+  /* ---------- Toast ---------- */
+  function toast(msg, type = 'ok') {
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'error' ? ' error' : '');
+    el.innerHTML = `<span style="color:${type === 'error' ? '#f87171' : 'var(--accent)'}">${I(type === 'error' ? 'x' : 'check', 'w-4 h-4')}</span><span>${esc(msg)}</span>`;
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, type === 'error' ? 5200 : 3200);
+  }
+
+  /* ---------- WhatsApp helpers ---------- */
+  const waNumber = () => { let n = String(data.contact.whatsapp || '').replace(/\D/g, ''); if (n.startsWith('0')) n = '62' + n.slice(1); else if (n.startsWith('8')) n = '62' + n; return n; };
+  const waLink = text => `https://wa.me/${waNumber()}${text ? '?text=' + encodeURIComponent(text) : ''}`;
+
+  /* ---------- Tema & ukuran (CSS variable dari config) ---------- */
+  function applyConfigStyles() {
+    const kebab = k => k.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+    const L = C.layout, T = C.typography;
+    const S = { ...DEF.sizes, ...(T.sizes || {}) };
+    const bp = { sm: { ...DEF.buttons.sm, ...((L.buttons || {}).sm || {}) }, md: { ...DEF.buttons.md, ...((L.buttons || {}).md || {}) }, lg: { ...DEF.buttons.lg, ...((L.buttons || {}).lg || {}) } };
+    const b = bp[L.buttonSize] || bp.md, bs = bp.sm;
+    const sec = { ...DEF.section, ...(L.sectionPadding || {}) };
+    const font = `'${T.fontFamily}', '${T.fallback}'`;
+    let css = `:root{--font:${font};--maxw:${L.maxWidth};--r-card:${R(L.cardRadius)};--r-inner:calc(${R(L.cardRadius)} * .6);` +
+      `--r-btn:${L.buttonShape === 'rounded' ? '.85rem' : '9999px'};--r-avatar:${L.avatarShape === 'circle' ? '9999px' : '26%'};` +
+      `--btn-py:${b.py};--btn-px:${b.px};--btn-fs:${b.fs};--btn-minh:${b.minH};` +
+      `--btn-sm-py:${bs.py};--btn-sm-px:${bs.px};--btn-sm-fs:${bs.fs};--btn-sm-minh:${bs.minH};` +
+      `--sec-pad-m:${sec.mobile};--sec-pad-d:${sec.desktop};` +
+      `--fs-body:${S.body};--fs-hero:${S.hero};--fs-h2:${S.h2};--fs-h3:${S.h3};--fs-lead:${S.lead};--fs-sub:${S.sub};--fs-small:${S.small};--fs-stat:${S.stat};--fs-price:${S.price};}\n`;
+    // Ukuran per jenis card
+    let mq = '';
+    [['services', '#servicesGrid'], ['pricing', '#pricingGrid'], ['portfolio', '#projectGrid']].forEach(([k, sel]) => {
+      const cc = { ...DEF.card, radius: L.cardRadius, ...((L.cards || {})[k] || {}) };
+      css += `:root{--r-${k}:${R(cc.radius)};--pad-${k}:${cc.padding};}\n${sel}{--gap:${cc.gap};--cols:${cc.columns};--cols-md:${cc.columnsTablet};}\n`;
+      mq += `:root{--pad-${k}:${cc.paddingMobile || cc.padding};}${sel}{--gap:${cc.gapMobile || cc.gap};}`;
+      if (k === 'services') css += `:root{--icon-services:${cc.iconSize || '2.75rem'};}\n`;
+      if (k === 'portfolio') css += `:root{--thumb-ratio:${cc.thumbRatio || '16 / 9'};--lines:${cc.descLines || 3};}\n`;
+    });
+    css += `@media (max-width:639px){${mq}}\n`;
+    ['dark', 'light'].forEach(m => {
+      css += `:root[data-theme="${m}"]{color-scheme:${m};` + Object.entries(C.theme.colors[m]).map(([k, v]) => `--${kebab(k)}:${v};`).join('') + '}\n';
+    });
+    const st = document.createElement('style'); st.id = 'config-theme'; st.textContent = css; document.head.appendChild(st);
+    // Google Font
+    const fam = encodeURIComponent(T.fontFamily).replace(/%20/g, '+');
+    const link = document.createElement('link'); link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${fam}:wght@${T.weights}&display=swap`;
+    document.head.appendChild(link);
+  }
+  let themeMeta = $('meta[name="theme-color"]');
+  function setTheme(mode, persist) {
+    root.setAttribute('data-theme', mode);
+    $('#themeKnob').innerHTML = I(mode === 'dark' ? 'moon' : 'sun', 'w-4 h-4');
+    $('#themeToggle').setAttribute('aria-pressed', String(mode === 'light'));
+    if (themeMeta) themeMeta.setAttribute('content', C.theme.colors[mode].bg);
+    if (persist) { try { localStorage.setItem(THEME_KEY, mode); } catch (e) {} }
+  }
+  function initTheme() {
+    let stored = null; try { stored = localStorage.getItem(THEME_KEY); } catch (e) {}
+    setTheme(stored === 'light' || stored === 'dark' ? stored : (C.theme.defaultMode === 'light' ? 'light' : 'dark'), false);
+    $('#themeToggle').addEventListener('click', () => {
+      root.classList.add('theme-transition');
+      setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', true);
+      setTimeout(() => root.classList.remove('theme-transition'), 650);
+    });
+  }
+
+  /* ---------- Reveal & counter ---------- */
+  const hasIO = 'IntersectionObserver' in window;
+  const revealIO = hasIO ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealIO.unobserve(e.target); } }), { threshold: .12, rootMargin: '0px 0px -40px 0px' }) : null;
+  const observeReveals = (scope = document) => $$('.reveal:not(.in)', scope).forEach(el => revealIO ? revealIO.observe(el) : el.classList.add('in'));
+  const fmt = n => Number(n).toLocaleString('id-ID');
+  function runCounter(el) {
+    const end = Number(el.dataset.count) || 0, suf = el.dataset.suffix || '';
+    if (reduceMotion) { el.textContent = fmt(end) + suf; return; }
+    const t0 = performance.now(), dur = 1400;
+    const tick = now => { const p = Math.min((now - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(Math.round(end * e)) + suf; if (p < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+  const counterIO = hasIO ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { runCounter(e.target); counterIO.unobserve(e.target); } }), { threshold: .6 }) : null;
+
+  /* ---------- Foto profil (Header & Hero) ---------- */
+  const initialsOf = () => C.info.brand.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const avatarSrc = () => normalizeImg(data.contact.avatar) || normalizeImg(C.info.avatarUrl);
+  function renderAvatar() {
+    const src = avatarSrc();
+    setImgOrFallback($('#heroAvatar'), src, `Foto ${C.info.brand}`, `<span>${esc(initialsOf())}</span>`);
+    if (C.info.avatarInHeader !== false) setImgOrFallback($('#navLogo'), src, `Logo ${C.info.brand}`, I('code', 'w-5 h-5'));
+  }
+
+  /* ---------- Animasi mengetik pada card hero ---------- */
+  let typeTimer = null, typeObserver = null;
+  const highlightCode = txt => txt.split('\n').map(l => esc(l)
+    .replace(/(&quot;.*?(?:&quot;|$))/g, '<span class="tok-str">$1</span>')
+    .replace(/\b(const|true|false)\b/g, '<span class="tok-kw">$1</span>')).join('\n');
+
+  function startTyping() {
+    const out = $('#codeTyped'); if (!out) return;
+    clearTimeout(typeTimer); if (typeObserver) { typeObserver.disconnect(); typeObserver = null; }
+    const cfg = { enabled: true, speed: 55, loop: true, ...(C.info.typing || {}) };
+    const full = (C.info.codeSample || []).join('\n');
+    const chars = Array.from(full);                       // aman untuk emoji (🚀)
+    if (!cfg.enabled || reduceMotion || !chars.length) { out.innerHTML = highlightCode(full); return; }
+    const render = n => { out.innerHTML = highlightCode(chars.slice(0, n).join('')) + '<span class="type-cursor" aria-hidden="true"></span>'; };
+    let n = 0, dir = 1, visible = true;
+    if (hasIO) {
+      typeObserver = new IntersectionObserver(es => { visible = es[0].isIntersecting; }, { threshold: .1 });
+      typeObserver.observe($('#heroCardMount'));
+    }
+    const step = () => {
+      if (!visible || document.hidden) { typeTimer = setTimeout(step, 400); return; }
+      let delay;
+      if (dir === 1) {
+        n++; render(n);
+        if (n >= chars.length) {
+          if (cfg.loop === false) return;                 // selesai, kursor tetap berkedip
+          dir = -1; delay = 3200;                          // jeda sebelum dihapus
+        } else {
+          const ch = chars[n - 1];
+          delay = ch === '\n' ? cfg.speed * 6 : cfg.speed * (.6 + Math.random() * .9);
+        }
+      } else {
+        n = Math.max(0, n - 3); render(n);                 // hapus cepat
+        if (n === 0) { dir = 1; delay = 700; } else delay = 14;
+      }
+      typeTimer = setTimeout(step, delay);
+    };
+    render(0);
+    typeTimer = setTimeout(step, 700);
+  }
+
+  /* ---------- Render: statis dari config ---------- */
+  function renderStatic() {
+    const i = C.info;
+    document.title = `${i.brand} — ${i.role}`;
+    $$('[data-brand]').forEach(el => el.textContent = i.brand);
+    const links = C.nav.map(n => `<a href="#${esc(n.id)}" data-nav="${esc(n.id)}" class="nav-link">${esc(n.label)}</a>`).join('');
+    $('#navDesktop').innerHTML = links;
+    $('#mobileMenuInner').innerHTML = links + `<a href="#contact" class="btn btn-primary mt-2">${esc(i.ctaNav)}</a>`;
+    $('#navCta').textContent = i.ctaNav;
+    $('#menuBtn').innerHTML = I('menu');
+
+    $('#availDot').classList.toggle('off', !i.availability.active);
+    $('#availText').textContent = i.availability.active ? i.availability.text : i.availability.inactiveText;
+    $('#heroTagline').textContent = i.tagline; $('#heroTagline').hidden = !i.tagline;
+    const h = i.headline;
+    $('#heroTitle').innerHTML = `${esc(h.before)} <span class="grad-text">${esc(h.highlight)}</span> ${esc(h.after)}`;
+    $('#heroDesc').textContent = i.description;
+    $('#heroCta1').innerHTML = `${esc(i.ctaPrimary)} ${I('arrow', 'w-4 h-4')}`;
+    $('#heroWa').innerHTML = `${I('whatsapp', 'w-4 h-4')} ${esc(i.ctaWhatsApp)}`;
+
+    const fab = $('#waFab'), fw = i.floatingWa || { enabled: true, label: 'Chat WhatsApp' };
+    fab.hidden = fw.enabled === false;
+    fab.innerHTML = `${I('whatsapp', 'w-6 h-6')}<span>${esc(fw.label || 'Chat WhatsApp')}</span>`;
+
+    $('#heroStats').innerHTML = C.stats.map((s, n) => `<div class="reveal" style="transition-delay:${n * 90}ms"><div class="stat-num grad-text"><span data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || '')}">0${esc(s.suffix || '')}</span></div><div class="stat-label">${esc(s.label)}</div></div>`).join('');
+    $$('[data-count]').forEach(el => counterIO ? counterIO.observe(el) : runCounter(el));
+
+    const fullCode = (i.codeSample || []).join('\n');
+    $('#heroCardMount').innerHTML = `
+      <div class="chip-float chip-float-1">${I('zap', 'w-4 h-4')} ${esc(i.heroChips[0] || '')}</div>
+      <div class="card hero-card">
+        <div class="flex items-center gap-4 relative">
+          <div class="avatar" id="heroAvatar"><span>${esc(initialsOf())}</span></div>
+          <div class="min-w-0">
+            <p class="font-extrabold text-lg leading-tight">${esc(i.brand)}</p>
+            <p class="t-sub text-muted">${esc(i.role)}</p>
+          </div>
+        </div>
+        <div class="code-block" role="img" aria-label="${esc('Contoh kode proyek: ' + fullCode.replace(/\s+/g, ' '))}">
+          <div class="code-dots" aria-hidden="true"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#34d399"></i></div>
+          <div class="code-stack" aria-hidden="true">
+            <pre class="code-ghost">${esc(fullCode)}</pre>
+            <pre id="codeTyped"></pre>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-4 relative">${i.skills.map(s => `<span class="skill-tag">${esc(s)}</span>`).join('')}</div>
+      </div>
+      <div class="chip-float chip-float-2">${I('check', 'w-4 h-4')} ${esc(i.heroChips[1] || '')}</div>`;
+
+    $$('[data-sec-head]').forEach(el => {
+      const s = C.sections[el.dataset.secHead];
+      el.innerHTML = `<div class="text-center max-w-2xl mx-auto mb-7 md:mb-11 reveal"><span class="badge">${esc(s.eyebrow)}</span><h2 class="sec-title mt-3">${esc(s.title)}</h2><p class="text-muted t-sub mt-2 md:mt-3">${esc(s.desc)}</p></div>`;
+    });
+    const cs = C.sections.contact;
+    $('#contactEyebrow').textContent = cs.eyebrow; $('#contactTitle').textContent = cs.title; $('#contactDesc').textContent = cs.desc;
+
+    $('#servicesGrid').innerHTML = C.services.map((s, n) => `
+      <div class="reveal" style="transition-delay:${n * 80}ms">
+        <article class="card card-hover svc-card">
+          <div class="flex items-center gap-3">
+            <div class="icon-box">${I(s.icon, 'w-5 h-5')}</div>
+            <h3 class="card-title">${esc(s.title)}</h3>
+          </div>
+          <p class="text-muted t-sub mt-3">${esc(s.desc)}</p>
+          <ul class="point-list mt-3 space-y-1.5">${(s.points || []).map(p => `<li>${I('check', 'w-4 h-4')}<span>${esc(p)}</span></li>`).join('')}</ul>
+        </article>
+      </div>`).join('');
+
+    $('#pricingGrid').innerHTML = C.pricing.map((p, n) => `
+      <div class="reveal" style="transition-delay:${n * 100}ms">
+        <article class="card price-card ${p.popular ? 'popular' : ''}">
+          ${p.popular ? `<span class="ribbon">${esc(p.badge || 'Populer')}</span>` : ''}
+          <h3 class="card-title">${esc(p.name)}</h3>
+          <p class="text-muted t-sub mt-1">${esc(p.desc)}</p>
+          <div class="mt-3"><span class="t-small text-muted font-semibold uppercase tracking-wide">${esc(p.unit || '')}</span><div class="price-num grad-text">${esc(p.price)}</div></div>
+          <ul class="point-list mt-4 space-y-1.5 flex-1">${p.features.map(f => `<li>${I('check', 'w-4 h-4')}<span>${esc(f)}</span></li>`).join('')}</ul>
+          <button type="button" class="btn ${p.popular ? 'btn-primary' : 'btn-ghost'} btn-block mt-5" data-plan="${n}">${esc(p.cta)}</button>
+        </article>
+      </div>`).join('');
+    $('#pricingNote').textContent = C.pricingNote || '';
+
+    $('#lfType').innerHTML = C.projectTypes.map(t => `<option>${esc(t)}</option>`).join('');
+    $('#lfBudget').innerHTML = C.budgets.map(t => `<option>${esc(t)}</option>`).join('');
+    $('#lfSubmit').innerHTML = `${I('whatsapp', 'w-5 h-5')} Kirim ke WhatsApp`;
+    $('#footerCredit').textContent = i.footerCredit;
+    $('#footerCopy').textContent = `© ${new Date().getFullYear()} ${i.brand}. All rights reserved.`;
+    fillIcons();
+  }
+
+  /* ---------- Render: dinamis (tergantung data/LocalStorage) ---------- */
+  let activeCat = 'All';
+  const catsOf = () => {
+    const base = C.categories.filter(c => c !== 'All');
+    const extra = [...new Set(data.projects.map(p => p.category).filter(Boolean))].filter(c => !base.includes(c));
+    return ['All', ...base, ...extra];
+  };
+  const countOf = c => c === 'All' ? data.projects.length : data.projects.filter(p => p.category === c).length;
+
+  function renderFilters() {
+    const box = $('#filters'), keepScroll = box.scrollLeft;
+    const cats = catsOf().filter(c => c === 'All' || countOf(c) > 0);
+    if (!cats.includes(activeCat)) activeCat = 'All';
+    box.innerHTML = cats.map(c => `<button type="button" class="chip ${c === activeCat ? 'active' : ''}" data-cat="${esc(c)}" aria-pressed="${c === activeCat}">${esc(c)} <span class="chip-count">${countOf(c)}</span></button>`).join('');
+    box.scrollLeft = keepScroll; // jaga posisi geser filter di HP
+  }
+  function projectCard(p, n) {
+    const url = normalizeUrl(p.demoUrl);
+    const demoBtn = url
+      ? `<a class="btn btn-primary btn-sm flex-1" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Live Demo ${I('external', 'w-3.5 h-3.5')}</a>`
+      : `<button type="button" class="btn btn-primary btn-sm flex-1" data-nodemo>Live Demo ${I('external', 'w-3.5 h-3.5')}</button>`;
+    return `
+      <div class="reveal" style="transition-delay:${Math.min(n, 5) * 70}ms">
+        <article class="card card-hover project-card">
+          <div class="thumb">
+            <img src="${esc(thumbOf(p))}" alt="Preview website ${esc(p.title)}" loading="lazy" data-title="${esc(p.title)}" data-cat="${esc(p.category)}">
+            <span class="badge thumb-badge">${esc(p.category)}</span>
+            <div class="thumb-overlay"><button type="button" class="btn btn-ghost btn-sm" data-preview="${esc(p.id)}" style="background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.35)">Lihat Preview</button></div>
+          </div>
+          <div class="pc-body flex flex-col flex-1">
+            <p class="t-small uppercase tracking-wider text-muted font-bold">${esc(p.client)}</p>
+            <h3 class="card-title mt-1">${esc(p.title)}</h3>
+            <p class="text-muted t-sub mt-1.5 clamp-lines">${esc(p.description)}</p>
+            <div class="flex gap-2 mt-auto pt-4">${demoBtn}<button type="button" class="btn btn-ghost btn-sm" data-preview="${esc(p.id)}">Detail</button></div>
+          </div>
+        </article>
+      </div>`;
+  }
+  function renderProjects() {
+    const list = data.projects.filter(p => activeCat === 'All' || p.category === activeCat);
+    $('#projectGrid').innerHTML = list.map(projectCard).join('');
+    $('#emptyState').hidden = list.length > 0;
+    observeReveals($('#projectGrid'));
+  }
+  function renderContactLinks() {
+    const wa = waLink(`Halo ${C.info.brand}, saya ingin diskusi proyek website.`);
+    $('#heroWa').href = wa; $('#waFab').href = wa;
+    const num = waNumber(), email = data.contact.email;
+    $('#contactInfo').innerHTML = `
+      <li class="flex items-center gap-3"><span class="icon-box">${I('whatsapp', 'w-5 h-5')}</span><div class="min-w-0"><p class="t-small text-muted font-semibold">WhatsApp</p><a class="font-bold hover:underline" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">${num ? '+' + esc(num) : '-'}</a></div></li>
+      ${email ? `<li class="flex items-center gap-3"><span class="icon-box">${I('mail', 'w-5 h-5')}</span><div class="min-w-0"><p class="t-small text-muted font-semibold">Email</p><a class="font-bold hover:underline break-all" href="mailto:${esc(email)}">${esc(email)}</a></div></li>` : ''}
+      <li class="flex items-center gap-3"><span class="icon-box">${I('clock', 'w-5 h-5')}</span><div class="min-w-0"><p class="t-small text-muted font-semibold">Respon</p><p class="font-bold t-sub">${esc(C.info.responseTime)}</p></div></li>`;
+  }
+  function renderFooterSocials() {
+    const items = data.socials.map(s => ({ s, url: normalizeUrl(s.url) })).filter(x => x.url);
+    let html = items.map(({ s, url }) => `<a class="social-btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(s.label)}" title="${esc(s.label)}">${I(s.id, 'w-5 h-5')}</a>`).join('');
+    html += `<a class="social-btn" href="${esc(waLink())}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp">${I('whatsapp', 'w-5 h-5')}</a>`;
+    $('#footerSocials').innerHTML = html;
+  }
+  let lastAvatarSrc = null;
+  function renderDynamic() {
+    renderFilters(); renderProjects(); renderContactLinks(); renderFooterSocials();
+    const src = avatarSrc();
+    if (src !== lastAvatarSrc) { lastAvatarSrc = src; renderAvatar(); }   // hindari muat ulang foto jika tidak berubah
+  }
+
+  /* ---------- Modal helper ---------- */
+  const openModals = []; let lastFocus = null;
+  function openModal(m, focusSel) {
+    lastFocus = document.activeElement; m.classList.add('open'); m.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open'); openModals.push(m);
+    setTimeout(() => { const f = focusSel ? $(focusSel, m) : $('[data-close]', m); if (f) f.focus(); }, 60);
+  }
+  function closeModal(m) {
+    m.classList.remove('open'); m.setAttribute('aria-hidden', 'true');
+    const i = openModals.indexOf(m); if (i > -1) openModals.splice(i, 1);
+    if (!openModals.length) document.body.classList.remove('modal-open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.addEventListener('keydown', e => {
+    const top = openModals[openModals.length - 1]; if (!top) return;
+    if (e.key === 'Escape') { closeModal(top); return; }
+    if (e.key === 'Tab') {
+      const f = $$('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])', top).filter(el => el.offsetParent !== null);
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  $$('.modal').forEach(m => m.addEventListener('mousedown', e => { if (e.target === m) closeModal(m); }));
+  $$('[data-close]').forEach(b => b.addEventListener('click', () => closeModal(b.closest('.modal'))));
+
+  /* ---------- Preview proyek ---------- */
+  function openPreview(id) {
+    const p = data.projects.find(x => x.id === id); if (!p) return;
+    const url = normalizeUrl(p.demoUrl);
+    $('#previewBody').innerHTML = `
+      <div class="thumb" style="aspect-ratio:16/9"><img src="${esc(thumbOf(p))}" alt="Preview website ${esc(p.title)}" data-title="${esc(p.title)}" data-cat="${esc(p.category)}"></div>
+      <div class="p-5 md:p-8">
+        <span class="badge">${esc(p.category)}</span>
+        <h3 id="pvTitle" class="sec-title mt-3" style="font-size:1.45rem">${esc(p.title)}</h3>
+        <p class="t-small uppercase tracking-wider text-muted font-bold mt-1">Klien: ${esc(p.client)}</p>
+        <p class="text-muted t-sub mt-3" style="white-space:pre-line">${esc(p.description || 'Belum ada deskripsi.')}</p>
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          ${url ? `<a class="btn btn-primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Buka Live Demo ${I('external', 'w-4 h-4')}</a>` : `<button type="button" class="btn btn-primary" data-nodemo>Live Demo ${I('external', 'w-4 h-4')}</button>`}
+          <a class="btn btn-ghost" href="${esc(waLink('Halo ' + C.info.brand + ', saya tertarik dengan proyek seperti "' + p.title + '". Bisa diskusi?'))}" target="_blank" rel="noopener noreferrer">${I('whatsapp', 'w-4 h-4')} Buat yang Serupa</a>
+        </div>
+      </div>`;
+    openModal($('#previewModal'));
+  }
+
+  /* ---------- Event: halaman publik ---------- */
+  document.addEventListener('error', e => {
+    const t = e.target;
+    if (t && t.tagName === 'IMG' && t.dataset.title !== undefined && !t.dataset.fb) { t.dataset.fb = '1'; t.src = placeholder(t.dataset.title, t.dataset.cat); }
+  }, true);
+  document.addEventListener('click', e => {
+    const cat = e.target.closest('[data-cat].chip'); if (cat) { activeCat = cat.dataset.cat; renderFilters(); renderProjects(); return; }
+    const pv = e.target.closest('[data-preview]'); if (pv) { openPreview(pv.dataset.preview); return; }
+    if (e.target.closest('[data-nodemo]')) { toast('Link demo belum diisi — tambahkan lewat Admin CMS.', 'error'); return; }
+    const plan = e.target.closest('[data-plan]');
+    if (plan) {
+      const p = C.pricing[Number(plan.dataset.plan)];
+      if (p.projectType && C.projectTypes.includes(p.projectType)) $('#lfType').value = p.projectType;
+      const note = $('#lfNote'); if (!note.value.trim()) note.value = `Saya tertarik dengan paket "${p.name}".`;
+      $('#contact').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+      setTimeout(() => $('#lfName').focus({ preventScroll: true }), 600);
+    }
+  });
+
+  /* Navbar: scroll state, mobile menu, active link, tombol WA melayang */
+  const navbar = $('#navbar'), waFab = $('#waFab');
+  const onScroll = () => { navbar.classList.toggle('scrolled', window.scrollY > 10); waFab.classList.toggle('show', window.scrollY > 320); };
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const menuBtn = $('#menuBtn'), mobileMenu = $('#mobileMenu');
+  function setMenu(open) { mobileMenu.classList.toggle('open', open); menuBtn.setAttribute('aria-expanded', String(open)); menuBtn.innerHTML = I(open ? 'x' : 'menu'); }
+  menuBtn.addEventListener('click', () => setMenu(!mobileMenu.classList.contains('open')));
+  mobileMenu.addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
+  if (hasIO) {
+    const so = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === e.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
+    C.nav.map(n => document.getElementById(n.id)).filter(Boolean).forEach(s => so.observe(s));
+  }
+
+  /* ---------- Form konsultasi → WhatsApp ---------- */
+  $('#leadForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#lfName').value.trim();
+    $('#lfNameErr').hidden = !!name;
+    if (!name) { $('#lfName').focus(); return; }
+    if (waNumber().length < 9) { toast('Nomor WhatsApp admin belum valid.', 'error'); return; }
+    const note = $('#lfNote').value.trim();
+    const msg = [
+      `Halo ${C.info.brand}! 👋`, 'Saya ingin konsultasi proyek website.', '',
+      `*Nama:* ${name}`, `*Tipe Proyek:* ${$('#lfType').value}`, `*Estimasi Budget:* ${$('#lfBudget').value}`,
+      `*Kebutuhan:* ${note || '-'}`, '', '_Dikirim dari website portofolio_'
+    ].join('\n');
+    const a = document.createElement('a'); a.href = waLink(msg); a.target = '_blank'; a.rel = 'noopener noreferrer';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('Membuka WhatsApp…');
+  });
+  $('#lfName').addEventListener('input', () => { $('#lfNameErr').hidden = true; });
+
+  /* =====================================================================
+     3) ADMIN CMS
+     ===================================================================== */
+  const A = { auth: false, tries: 0, lockUntil: 0, editingId: null, img: '', imgName: '', avatar: '' };
+  const adminModal = $('#adminModal');
+  const passOk = v => { let s = null; try { s = localStorage.getItem(PASS_KEY); } catch (e) {} return s ? String(cyrb53(v)) === s : v === C.admin.password; };
+
+  function updateStorageStatus() {
+    const el = $('#storageStatus'); if (!el) return;
+    store.openDB().then(() => {
+      const on = [store.caps.ls ? 'LocalStorage' : '', store.caps.idb ? 'IndexedDB' : ''].filter(Boolean);
+      el.innerHTML = on.length ? `Status penyimpanan: <b>aktif</b> (${on.join(' + ')}).` : '<span style="color:#f87171">Status penyimpanan: browser memblokir penyimpanan — perubahan hanya bertahan sampai halaman ditutup. Buka lewat browser biasa (bukan mode privat/preview) atau gunakan Export JSON.</span>';
+      if (!on.length && A.auth) toast('Browser memblokir penyimpanan — data CMS tidak akan permanen.', 'error');
+    });
+  }
+
+  function openAdmin() { openModal(adminModal, A.auth ? '#pfTitle' : '#adminPass'); showAdmin(); }
+  function showAdmin() {
+    $('#adminLogin').hidden = A.auth; $('#adminDash').hidden = !A.auth; $('#adminLogout').hidden = !A.auth;
+    $('#adminSub').textContent = A.auth ? 'Kelola proyek, kontak & sosial media' : 'Masukkan password untuk melanjutkan';
+    if (A.auth) { adminHook = refreshAdmin; refreshAdmin(); fillContactTab(); resetProjectForm(); updateStorageStatus(); } else adminHook = null;
+  }
+  $('#adminOpen').addEventListener('click', openAdmin);
+  if (location.hash === '#admin') openAdmin();
+  window.addEventListener('hashchange', () => { if (location.hash === '#admin') openAdmin(); });
+  $('#adminLogout').addEventListener('click', () => { A.auth = false; $('#adminPass').value = ''; showAdmin(); $('#adminPass').focus(); toast('Panel dikunci.'); });
+
+  $('#adminLogin').addEventListener('submit', e => {
+    e.preventDefault();
+    const err = $('#adminLoginErr'); err.hidden = true;
+    if (Date.now() < A.lockUntil) { err.textContent = `Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil((A.lockUntil - Date.now()) / 1000)} detik.`; err.hidden = false; return; }
+    if (passOk($('#adminPass').value)) { A.auth = true; A.tries = 0; $('#adminPass').value = ''; showAdmin(); setTimeout(() => $('#pfTitle').focus(), 50); toast('Selamat datang, Admin!'); }
+    else { A.tries++; if (A.tries >= 5) { A.lockUntil = Date.now() + 30000; A.tries = 0; } err.textContent = 'Password salah.'; err.hidden = false; $('#adminPass').select(); }
+  });
+
+  $$('.tab-btn').forEach(b => b.addEventListener('click', () => {
+    $$('.tab-btn').forEach(x => x.classList.toggle('active', x === b));
+    ['projects', 'contact', 'data'].forEach(t => { $('#tab-' + t).hidden = t !== b.dataset.tab; });
+  }));
+
+  /* -- Proyek -- */
+  function refreshAdmin() {
+    $('#catList').innerHTML = catsOf().filter(c => c !== 'All').map(c => `<option value="${esc(c)}">`).join('');
+    $('#adminCount').textContent = `(${data.projects.length})`;
+    $('#adminList').innerHTML = data.projects.length ? data.projects.map(p => `
+      <div class="admin-row">
+        <img src="${esc(thumbOf(p))}" alt="" data-title="${esc(p.title)}" data-cat="${esc(p.category)}">
+        <div class="min-w-0 flex-1">
+          <p class="font-bold truncate">${esc(p.title)}</p>
+          <p class="t-small text-muted truncate">${esc(p.category)} • ${esc(p.client)}${normalizeUrl(p.demoUrl) ? '' : ' • <span style="color:#f59e0b">belum ada link demo</span>'}</p>
+        </div>
+        <button type="button" class="icon-btn" data-edit="${esc(p.id)}" aria-label="Edit ${esc(p.title)}" title="Edit">${I('edit', 'w-4 h-4')}</button>
+        <button type="button" class="icon-btn" data-del="${esc(p.id)}" aria-label="Hapus ${esc(p.title)}" title="Hapus" style="color:#f87171">${I('trash', 'w-4 h-4')}</button>
+      </div>`).join('') : '<p class="text-muted t-sub">Belum ada proyek. Tambahkan lewat form di atas.</p>';
+  }
+  function updatePreview() {
+    const typed = normalizeImg($('#pfImage').value);
+    const src = typed || A.img || placeholder($('#pfTitle').value || 'Preview', $('#pfCategory').value);
+    const img = $('#pfPreview'); img.dataset.fb = ''; img.dataset.title = $('#pfTitle').value || 'Preview'; img.dataset.cat = $('#pfCategory').value; img.src = src;
+    $('#pfImgClear').hidden = !A.img;
+    $('#pfImgNote').textContent = A.img && !typed ? `Memakai gambar upload${A.imgName ? ' (' + A.imgName + ')' : ''}. Isi URL di atas untuk menggantinya.` : 'Gambar upload otomatis diperkecil (maks. 900px) agar hemat penyimpanan browser. Jika kosong, dibuatkan thumbnail otomatis.';
+  }
+  function resetProjectForm() {
+    A.editingId = null; A.img = ''; A.imgName = '';
+    $('#projectForm').reset(); $('#pfHeading').textContent = 'Tambah Proyek Baru'; $('#pfSave').textContent = 'Simpan Proyek'; $('#pfCancel').hidden = true; updatePreview();
+  }
+  ['pfImage', 'pfTitle', 'pfCategory'].forEach(id => $('#' + id).addEventListener('input', updatePreview));
+
+  /* Baca & perkecil gambar upload (JPG / JPEG / PNG / WebP). PNG tetap PNG (transparansi terjaga) selama ukurannya wajar. */
+  function fileToDataUrl(file, maxW = 900, quality = .82) {
+    return new Promise((res, rej) => {
+      const okType = /^image\/(png|jpe?g|jpg|webp|gif)$/i.test(file.type) || /\.(png|jpe?g|webp|gif)$/i.test(file.name || '');
+      if (!okType) return rej(new Error('Format tidak didukung. Gunakan JPG, JPEG, atau PNG.'));
+      const wantPng = /png/i.test(file.type) || /\.png$/i.test(file.name || '');
+      const fr = new FileReader();
+      fr.onerror = () => rej(new Error('Gagal membaca file.'));
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = () => rej(new Error('Gambar tidak bisa dibuka. Pastikan file JPG/JPEG/PNG valid.'));
+        img.onload = () => {
+          const s = Math.min(1, maxW / (img.width || maxW)), c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+          const ctx = c.getContext('2d');
+          if (wantPng) {
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            const png = c.toDataURL('image/png');
+            if (png.length <= 900000) return res(png);              // PNG wajar -> pertahankan
+            ctx.clearRect(0, 0, c.width, c.height);                // terlalu besar -> konversi ke JPEG
+          }
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', quality));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  $('#pfFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { A.img = await fileToDataUrl(f); A.imgName = f.name; $('#pfImage').value = ''; updatePreview(); toast('Gambar siap dipakai.'); }
+    catch (err) { toast(err.message, 'error'); }
+    e.target.value = '';
+  });
+  $('#pfImgClear').addEventListener('click', () => { A.img = ''; A.imgName = ''; updatePreview(); });
+
+  $('#projectForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const title = $('#pfTitle').value.trim(), category = $('#pfCategory').value.trim();
+    if (!title || !category) { toast('Nama proyek dan kategori wajib diisi.', 'error'); return; }
+    const demoRaw = $('#pfDemo').value.trim(), imgRaw = $('#pfImage').value.trim();
+    const demo = normalizeUrl(demoRaw), imgUrl = normalizeImg(imgRaw);
+    if (demoRaw && !demo) { toast('Link demo tidak valid.', 'error'); return; }
+    if (imgRaw && !imgUrl) { toast('URL/path gambar tidak valid.', 'error'); return; }
+    const rec = { id: A.editingId || uid(), title, client: $('#pfClient').value.trim() || title, category, description: $('#pfDesc').value.trim(), image: imgUrl || A.img || '', demoUrl: demo };
+    const editing = !!A.editingId;
+    const ok = commit(d => { const i = d.projects.findIndex(p => p.id === rec.id); if (i >= 0) d.projects[i] = rec; else d.projects.unshift(rec); });
+    if (ok) { toast(editing ? 'Proyek diperbarui.' : 'Proyek ditambahkan ke galeri.'); resetProjectForm(); }
+  });
+  $('#pfCancel').addEventListener('click', resetProjectForm);
+
+  $('#adminList').addEventListener('click', e => {
+    const ed = e.target.closest('[data-edit]'), del = e.target.closest('[data-del]');
+    if (ed) {
+      const p = data.projects.find(x => x.id === ed.dataset.edit); if (!p) return;
+      A.editingId = p.id; $('#pfTitle').value = p.title; $('#pfClient').value = p.client || ''; $('#pfCategory').value = p.category || '';
+      $('#pfDemo').value = p.demoUrl || ''; $('#pfDesc').value = p.description || '';
+      if (/^data:image/i.test(p.image || '')) { A.img = p.image; A.imgName = 'tersimpan'; $('#pfImage').value = ''; } else { A.img = ''; A.imgName = ''; $('#pfImage').value = p.image || ''; }
+      $('#pfHeading').textContent = 'Edit Proyek'; $('#pfSave').textContent = 'Update Proyek'; $('#pfCancel').hidden = false; updatePreview();
+      $('#projectForm').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('#pfTitle').focus({ preventScroll: true });
+    }
+    if (del) {
+      const p = data.projects.find(x => x.id === del.dataset.del); if (!p) return;
+      if (confirm(`Hapus proyek "${p.title}"? Tindakan ini tidak bisa dibatalkan.`)) {
+        if (commit(d => { d.projects = d.projects.filter(x => x.id !== p.id); })) { toast('Proyek dihapus.'); if (A.editingId === p.id) resetProjectForm(); }
+      }
+    }
+  });
+
+  /* -- Kontak & sosial -- */
+  function updateAvatarPreview() {
+    const typed = normalizeImg($('#cfAvatar').value);
+    const src = typed || A.avatar || normalizeImg(C.info.avatarUrl);
+    setImgOrFallback($('#cfAvatarBox'), src, 'Pratinjau foto profil', `<span>${esc(initialsOf())}</span>`);
+    $('#cfAvatarClear').hidden = !A.avatar;
+  }
+  function fillContactTab() {
+    $('#cfWa').value = data.contact.whatsapp || ''; $('#cfEmail').value = data.contact.email || '';
+    const av = data.contact.avatar || '';
+    if (/^data:image/i.test(av)) { A.avatar = av; $('#cfAvatar').value = ''; } else { A.avatar = ''; $('#cfAvatar').value = av; }
+    updateAvatarPreview();
+    $('#cfSocials').innerHTML = data.socials.map(s => `<div><label class="label" for="cf_${esc(s.id)}">${esc(s.label)}</label><input id="cf_${esc(s.id)}" data-social="${esc(s.id)}" class="input" inputmode="url" value="${esc(s.url)}" placeholder="https://..."></div>`).join('');
+  }
+  $('#cfAvatar').addEventListener('input', updateAvatarPreview);
+  $('#cfAvatarFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { A.avatar = await fileToDataUrl(f, 480, .86); $('#cfAvatar').value = ''; updateAvatarPreview(); toast('Foto profil siap — klik "Simpan Perubahan".'); }
+    catch (err) { toast(err.message, 'error'); }
+    e.target.value = '';
+  });
+  $('#cfAvatarClear').addEventListener('click', () => { A.avatar = ''; updateAvatarPreview(); });
+  $('#tab-contact').addEventListener('submit', e => {
+    e.preventDefault();
+    const wa = $('#cfWa').value.trim(), email = $('#cfEmail').value.trim();
+    if (wa.replace(/\D/g, '').length < 9) { toast('Nomor WhatsApp tidak valid.', 'error'); return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Format email tidak valid.', 'error'); return; }
+    const avRaw = $('#cfAvatar').value.trim(), avUrl = normalizeImg(avRaw);
+    if (avRaw && !avUrl) { toast('URL/path foto profil tidak valid.', 'error'); return; }
+    const avatar = avUrl || A.avatar || '';
+    const socials = {};
+    for (const inp of $$('[data-social]')) { const raw = inp.value.trim(); const url = normalizeUrl(raw); if (raw && !url) { toast(`Link ${inp.dataset.social} tidak valid.`, 'error'); return; } socials[inp.dataset.social] = url; }
+    if (commit(d => { d.contact = { whatsapp: wa, email, avatar }; d.socials = d.socials.map(s => ({ ...s, url: socials[s.id] ?? s.url })); })) toast('Kontak, foto profil & sosial media diperbarui.');
+  });
+
+  /* -- Data & keamanan -- */
+  function download(name, text) {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $('#btnExport').addEventListener('click', () => { download(`portfolio-data-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 2)); toast('File backup diunduh.'); });
+  $('#btnCopy').addEventListener('click', async () => {
+    const txt = JSON.stringify(data.projects, null, 2);
+    try { await navigator.clipboard.writeText(txt); toast('JSON proyek disalin — tempel ke defaultProjects di config.'); }
+    catch (e) { const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); toast('JSON proyek disalin.'); } catch (_) { toast('Gagal menyalin. Gunakan Export JSON.', 'error'); } t.remove(); }
+  });
+  $('#importFile').addEventListener('change', async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const p = JSON.parse(await f.text());
+      if (!p || !Array.isArray(p.projects)) throw new Error('Struktur file tidak sesuai.');
+      if (!confirm('Import akan menimpa seluruh data proyek, kontak, dan sosial media saat ini. Lanjutkan?')) return;
+      const d0 = defaults();
+      const clean = {
+        projects: p.projects.filter(validProject).map(x => ({ id: String(x.id), title: String(x.title).slice(0, 80), client: String(x.client || x.title).slice(0, 80), category: String(x.category || 'Lainnya').slice(0, 40), description: String(x.description || '').slice(0, 320), image: normalizeImg(x.image), demoUrl: normalizeUrl(x.demoUrl) })),
+        contact: { whatsapp: String((p.contact && p.contact.whatsapp) || d0.contact.whatsapp), email: String((p.contact && p.contact.email) || ''), avatar: normalizeImg(p.contact && p.contact.avatar) },
+        socials: d0.socials.map(s => { const f2 = Array.isArray(p.socials) && p.socials.find(x => x && x.id === s.id); return { ...s, url: f2 ? normalizeUrl(f2.url) : s.url }; })
+      };
+      if (commit(d => { Object.assign(d, clean); })) { fillContactTab(); toast(`Import berhasil (${clean.projects.length} proyek).`); }
+    } catch (err) { toast('Import gagal: ' + err.message, 'error'); }
+  });
+  $('#btnReset').addEventListener('click', () => {
+    if (!confirm('Kembalikan semua data ke versi awal dari config? Perubahan di browser ini akan hilang.')) return;
+    store.removeLocal(); store.clearIDB();
+    data = defaults(); renderDynamic(); refreshAdmin(); fillContactTab(); resetProjectForm(); toast('Data dikembalikan ke awal.');
+  });
+  $('#pwForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = $('#pwNew').value, b = $('#pwConfirm').value;
+    if (a.length < 6) { toast('Password minimal 6 karakter.', 'error'); return; }
+    if (a !== b) { toast('Konfirmasi password tidak cocok.', 'error'); return; }
+    try { localStorage.setItem(PASS_KEY, String(cyrb53(a))); } catch (err) { toast('Gagal menyimpan password.', 'error'); return; }
+    $('#pwForm').reset(); toast('Password admin diperbarui.');
+  });
+
+  /* =====================================================================
+     4) INIT
+     ===================================================================== */
+  applyConfigStyles();
+  fillIcons();
+  initTheme();
+  renderStatic();
+  renderDynamic();
+  startTyping();
+  observeReveals();
+  root.classList.add('ready');
+})();
+</script>
+</body>
+</html>
